@@ -5,7 +5,7 @@ class PicturesqueOutputHandler:
        "_output": lambda e: "break",
        "_error": lambda e: "break"
     }
-    _output = ""
+    _output = []
     _errors = []
     def bind(self, evt, func):
        if evt == "output":
@@ -15,8 +15,7 @@ class PicturesqueOutputHandler:
        else:
           raise ipic.errors.PicturesqueUnreconizedEventException(f"\"{evt}\"")
     def output(self, text):
-       self._output += f"{text}\n"
-       self._output = self._output[:-1]
+       self._output.append(text)
        self._listeners["_output"](text)
     def error(self, err):
        self._errors.append(err)
@@ -26,4 +25,4 @@ class PicturesqueOutputHandler:
     def geterrors(self):
        return self._errors
     def __str__(self):
-       return self._output
+       return "\n".join(self._output)

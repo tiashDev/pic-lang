@@ -28,8 +28,8 @@ if len(sys.argv) > 1:
    else:
       if sys.argv[1] == "-c":
          ipic.lang.lexer(sys.argv[2])
-         if not turtle_gone:
-            ipic.lang.turtle.mainloop()
+         if not iturtle_gone:
+            ipic.lang.iturtle.mainloop()
       else:
          print("Error: Unrecognized flag/option:", sys.argv[1], file=sys.stderr)
 else:

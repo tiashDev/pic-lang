@@ -1,11 +1,8 @@
-import turtle as iturtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog
+import turtle as iturtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os
 stamps = list()
 out = ipic.out.PicturesqueOutputHandler()
 turtle_gone = False
 iturtle.title("Picturesque")
-def initturtle(turtle_screen):
-   global iturtle
-   iturtle = iturtle.RawTurtle(turtle_screen)
 tkinter_win_ids = {}
 helpme = """Commands:
   - forward <px>: Moves the turtle (the pen) forward by <px> pixels.
@@ -100,12 +97,51 @@ Default variables:
     Toggleable using -
       - mode
   - $shape: Gets the current shape of the turtle."""
-# - var <n> = <v>: Creates a variable with name <n> and value <v>.
-    # Then you can access it (the variable you created) using %<n>. 
-    # Example -
-       # var x = 10;
-       # logln %x; ~ Logs "10" to the console;
-    # NOTE - Variables are "immutable". That means you cannot change the value of the variable, once you have defined it.
+# credit: stackoverflow
+def path_insensitive(path):
+    return _path_insensitive(path) or path
+def _path_insensitive(path):
+    """
+    Recursive part of path_insensitive to do the work.
+    """
+
+    if path == '' or os.path.exists(path):
+        return path
+
+    base = os.path.basename(path)  # may be a directory or a file
+    dirname = os.path.dirname(path)
+
+    suffix = ''
+    if not base:  # dir ends with a slash?
+        if len(dirname) < len(path):
+            suffix = path[:len(path) - len(dirname)]
+
+        base = os.path.basename(dirname)
+        dirname = os.path.dirname(dirname)
+
+    if not os.path.exists(dirname):
+        dirname = _path_insensitive(dirname)
+        if not dirname:
+            return
+
+    # at this point, the directory exists but not the file
+
+    try:  # we are expecting dirname to be a directory, but it could be a file
+        files = os.listdir(dirname)
+    except OSError:
+        return
+
+    baselow = base.lower()
+    try:
+        basefinal = next(fl for fl in files if fl.lower() == baselow)
+    except StopIteration:
+        return
+
+    if basefinal:
+        return os.path.join(dirname, basefinal) + suffix
+    else:
+        return
+# END: credit
 def interpret(do, val, lineno, line, is_console, filename, is_artist):
    global stamps
    global turtle_gone
@@ -322,14 +358,14 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
          if tkinter_win_ids[args["NAME"]].__class__.__name__ == "ScrolledText" or tkinter_win_ids[args["NAME"]].__class__.__name__ == "Text" or tkinter_win_ids[args["NAME"]].__class__.__name__ == "Entry":
             tkinter_win_ids[args["NAME"]].insert(args["ARGS"][0].lower(), args["ARGS"][1])
          else:
-            raise PicturesqueInvalidWidgetException(f"Invalid widget for command {shlex.quote(args['CMD'])}. (line {lineno}, file {filename if filename != None else '<console>'})")
+            raise ipic.errors.PicturesqueInvalidWidgetException(f"Invalid widget for command {args['CMD']!r}. (line {lineno}, file {filename if filename != None else '<console>'})")
       elif args["CMD"] == "INVOKE":
          if tkinter_win_ids[args["NAME"]].__class__.__name__ == "Button":
             tkinter_win_ids[args["NAME"]].invoke()
          else:
-            raise PicturesqueInvalidWidgetException(f"Invalid widget for command {shlex.quote(args['CMD'])}. (line {lineno}, file {filename if filename != None else '<console>'})")
+            raise ipic.errors.PicturesqueInvalidWidgetException(f"Invalid widget for command {args['CMD']!r}. (line {lineno}, file {filename if filename != None else '<console>'})")
       else:
-         raise ipic.errors.PicturesqueUnreconizedCommandException(f"""Error: Unrecognized command {shlex.quote(args['CMD'])} at line {lineno} in {filename if filename != None else "<console>"}.""")
+         raise ipic.errors.PicturesqueUnreconizedCommandException(f"""Error: Unrecognized command {args['CMD']!r} at line {lineno} in {filename if filename != None else "<console>"}.""")
    elif do == "FRM":
       args = json.loads(val)
       tkinter_win_ids[args["NAME"]] = tkinter.ttk.Frame(tkinter_win_ids[args["PARENT"]])
@@ -363,13 +399,14 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
       out.output("\n".join(tkinter.filedialog.askopenfilenames()))
    elif do == "ASKDIR":
       out.output(tkinter.filedialog.askdirectory())
-   elif do == "TCLINIT":
-      tkinter_win_ids[val] = tkinter.Tcl()
-   elif do == "TKINIT":
-      if tkinter_win_ids[val].__class__.__name__ == "Tcl":
-         tkinter_win_ids[val].loadtk()
+   elif do == "DOTCL":
+      args = shlex.split(val)
+      if tkinter_win_ids[args[0]].__class__.__name__ == "Tk":
+         tkinter_win_ids[args[0]].tk.eval(args[1].lower())
       else:
-         f"Invalid widget for command {shlex.quote(args['CMD'])}. (line {lineno}, file {filename if filename != None else '<console>'})"
+         raise ipic.errors.PicturesqueInvalidWidgetException(f"Invalid widget for command \"dotcl\". (line {lineno}, file {filename if filename != None else '<console>'})")
+   elif do == "SCREEN.BGPIC":
+      iturtle.getscreen().bgpic(path_insensitive(val))
    else:
       file = ""
       if filename != None:
@@ -424,6 +461,7 @@ def lexer(program, is_console=False, filename=None, is_artist=False):
           num = defsysvar("STAMPS", stamps, num)
           num = defsysvar("MODE", iturtle.mode(), num)
           num = defsysvar("shape", iturtle.shape(), num)
+          num = defsysvar("bgpic", iturtle.getscreen().bgpic(), num)
       num = num.replace("($)", "$")
       # for x in range(len(varnames)):
          # num = num.replace(f"%{varnames[x]}", varvals[x])=
