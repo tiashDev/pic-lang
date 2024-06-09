@@ -1,0 +1,1 @@
+@C:\Users\tiash\OneDrive\picturesque\env\Scripts\python %*

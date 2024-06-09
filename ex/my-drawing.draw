@@ -1,0 +1,134 @@
+reset;
+~ Set the heading mode to logo;
+~mode logo;
+~ path.start starts a line;
+path.start;
+forward 200;
+left 90;
+forward 100;
+~ path.end ends a line;
+path.end;
+~ Go to the starting position;
+home;
+~ Draw another line;
+path.start;
+right 90;
+forward 100;
+left 90;
+backward 50;
+path.end;
+~ Draw a red line, with the turtle coloured yellow;
+color red;
+fill yellow;
+path.start;
+fillcolor.start;
+left 30;
+backward 150;
+fillcolor.end;
+path.end;
+~ Wait for a second;
+wait 1;
+~ Stamp the turtle;
+stamp;
+~ Go to a specific position;
+goto 12 23;
+color blue;
+fill white;
+path.start;
+fillcolor.start;
+right 45;
+forward 200;
+fillcolor.end;
+path.end;
+wait 2;
+~ Clear all the stamps;
+stamps.clear;
+~ logln: loglns a value to the console on a new line;
+~ $pos: Gets the position of the turtle in format "(x, y)";
+logln pos: $pos;
+~ $x: Gets the x coordinate (horizontal position) of the turtle;
+logln x: $x;
+~ $y: Gets the y coordinate (vertical position) of the turtle;
+logln y: $y;
+~ $down: A boolean. True if the turtle is down, otherwise false.
+  Toggleable using -
+    - path.start = path.begin = pen.down
+    - path.end = pen.up
+;
+logln down: $down;
+~ $outline: Gets the color of the current outline of the turtle;
+logln outline: $outline;
+~ $fill: Gets the color of the current filling of the turtle;
+logln fill: $fill;
+~ $color: Gets the current color of the lines drawn by the turtle;
+logln color: $color;
+~ $visible: Another boolean. True if the turtle is visible, otherwise false.
+  Toggleable using -
+    - hide
+	- show
+;
+logln visible: $visible;
+~ $turtle_shape_polygonal_points: The turtle's current shape polygon as a list of coordinate pairs;
+logln turtle_shape_polygonal_points: $turtle_shape_polygonal_points;
+~ $winwidth: The width of the window, in pixels;
+logln winwidth: $winwidth;
+~ $winheight: The height of the window, in pixels;
+logln winheight: $winheight;
+~ Make the turtle blink;
+wait 1;
+hide;
+wait 1;
+show;
+wait 1;
+hide;
+wait 1;
+show;
+wait 1;
+hide;
+wait 1;
+show;
+wait 1;
+hide;
+wait 1;
+show;
+wait 1;
+~ Change the colour of the screen to green;
+screen.color green;
+~ $bgcolor: The current colour of the screen;
+logln bgcolor: $bgcolor;
+~ Change the background image of the screen to "myimage.gif";
+wait 2;
+~screen.image myimage.gif;
+~ $bgimage: The current background image of the screen;
+~logln bgimage: $bgimage;
+~ $mode: The turtle heading mode of the drawing
+  Values:
+    - "standard": The default turtle heading is to the east
+    - "world": The default turtle heading is specified using user-defined world coordinates (using setworldcoordinates)
+	- "loglno": The default turtle heading is to the north
+  Toggleable using:
+    - mode
+;
+logln mode: $mode;
+logln ---------------------------~: help :~---------------------------;
+help;
+~~var x = 12;
+~~logln x = %x;
+pen.up;
+forward 10;
+dot 2 blue;
+forward 10;
+dot 2 blue;
+forward 10;
+dot 2 blue;
+forward 10;
+dot 2 blue;
+~ Plotting;
+plot 1 2 3 4 * 3 8 1 10 : o-.c;
+bar apples bananas cherries dates * 4 3 2 1 : blue;
+barh apples bananas cherries dates * 4 3 2 1 : blue;
+pie apples bananas cherries dates * 4 3 2 1 : red green blue yellow;
+hist random;
+hist random 50 25 100;
+hist 167.62255766 175.32495609 152.84661337 165.50264047 163.17457988 162.29867872 172.83638413 168.67303667 164.57361342 180.81120541 170.57782187 167.53075749 176.15356275 176.95378312 158.4125473 187.8842668 159.03730075 166.69284332 160.73882029 152.22378865;
+closeonclick; exit;
