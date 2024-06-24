@@ -1,1 +1,0 @@
-C:/Users/tiash/OneDrive/picturesque/picturesque.py

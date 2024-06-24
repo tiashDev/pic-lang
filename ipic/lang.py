@@ -1,4 +1,13 @@
-import turtle as iturtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os
+import turtle as iturtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os, ipic.type, webbrowser, pstats, io, pstats, __main__, ipic.path
+tkwin = None
+if '__ipic_tk_win_class__' in dir(__main__):
+   tkwin = __main__.__ipic_tk_win_class__
+else:
+   raise ipic.errors.PicturesqueUndefinedTkWinClassException("The variable '__ipic_tk_win_class__' is undefined.")
+try: 
+   import cProfile as profile
+except ImportError: 
+   import profile
 stamps = list()
 out = ipic.out.PicturesqueOutputHandler()
 turtle_gone = False
@@ -25,7 +34,7 @@ helpme = """Commands:
   - speed <s>: Sets the speed of the turtle to <s>.
   - size <s>: Sets the width of the line to <s>.
   - logln <v>: Logs a value (<v>) to the console on a new line.
-  - circle <r>: Makes the turtle go around in a circle with radius <r>.
+  - circle <r>: Makes the turtle draw a circle with radius <r>.
   - outline <c>: Sets the colour of the outline of the turtle to <c>.
   - hide: Hides the turtle.
   - show: Shows the turtle.
@@ -97,51 +106,6 @@ Default variables:
     Toggleable using -
       - mode
   - $shape: Gets the current shape of the turtle."""
-# credit: stackoverflow
-def path_insensitive(path):
-    return _path_insensitive(path) or path
-def _path_insensitive(path):
-    """
-    Recursive part of path_insensitive to do the work.
-    """
-
-    if path == '' or os.path.exists(path):
-        return path
-
-    base = os.path.basename(path)  # may be a directory or a file
-    dirname = os.path.dirname(path)
-
-    suffix = ''
-    if not base:  # dir ends with a slash?
-        if len(dirname) < len(path):
-            suffix = path[:len(path) - len(dirname)]
-
-        base = os.path.basename(dirname)
-        dirname = os.path.dirname(dirname)
-
-    if not os.path.exists(dirname):
-        dirname = _path_insensitive(dirname)
-        if not dirname:
-            return
-
-    # at this point, the directory exists but not the file
-
-    try:  # we are expecting dirname to be a directory, but it could be a file
-        files = os.listdir(dirname)
-    except OSError:
-        return
-
-    baselow = base.lower()
-    try:
-        basefinal = next(fl for fl in files if fl.lower() == baselow)
-    except StopIteration:
-        return
-
-    if basefinal:
-        return os.path.join(dirname, basefinal) + suffix
-    else:
-        return
-# END: credit
 def interpret(do, val, lineno, line, is_console, filename, is_artist):
    global stamps
    global turtle_gone
@@ -310,7 +274,7 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
          except KeyboardInterrupt:
             break
    elif do == "WININIT":
-      tkinter_win_ids[val] = tkinter.Tk()
+      tkinter_win_ids[val] = tkwin()
       tkinter_win_ids[val].title("Picturesque")
    elif do == "WINTITLE":
       args = shlex.split(val)
@@ -400,13 +364,32 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
    elif do == "ASKDIR":
       out.output(tkinter.filedialog.askdirectory())
    elif do == "DOTCL":
-      args = shlex.split(val)
-      if tkinter_win_ids[args[0]].__class__.__name__ == "Tk":
-         tkinter_win_ids[args[0]].tk.eval(args[1].lower())
+      argsx = shlex.split(val)
+      argsy = shlex.split(line)
+      if tkinter_win_ids[argsx[0]].__class__.__name__ == "Tk":
+         tkinter_win_ids[argsx[0]].tk.eval(argsy[2])
       else:
-         raise ipic.errors.PicturesqueInvalidWidgetException(f"Invalid widget for command \"dotcl\". (line {lineno}, file {filename if filename != None else '<console>'})")
-   elif do == "SCREEN.BGPIC":
-      iturtle.getscreen().bgpic(path_insensitive(val))
+         raise ipic.errors.PicturesqueInvalidWidgetException(f"Invalid object for command \"dotcl\". (line {lineno}, file {filename if filename != None else '<console>'})")
+   elif do == "SCREEN.IMAGE":
+      iturtle.getscreen().bgpic(ipic.path.path_insensitive(val))
+   elif do == "WEBSITE.OPEN":
+      webbrowser.open(shlex.split(line)[1])
+   elif do == "WEBSITE.OPENWIN":
+      webbrowser.open_new(shlex.split(line)[1])
+   elif do == "WEBSITE.OPENTAB":
+      webbrowser.open_new_tab(shlex.split(line)[1])
+   elif do == "PROFILE":
+      pr = profile.Profile()
+      pr.runctx(f"lexer({val.replace(',', ';').replace('\'', ',')!r})", globals(), locals())
+      try: pr.disable()
+      except: pass
+      s = io.StringIO()
+      sortby = pstats.SortKey.CUMULATIVE
+      ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+      ps.print_stats()
+      out.output(s.getvalue())
+   elif do == "CLEARTERM":
+      out.requestclearscreen()
    else:
       file = ""
       if filename != None:
@@ -448,7 +431,7 @@ def lexer(program, is_console=False, filename=None, is_artist=False):
           num = defsysvar("POS", iturtle.position(), num)
           num = defsysvar("X", iturtle.xcor(), num)
           num = defsysvar("Y", iturtle.ycor(), num)
-          num = defsysvar("DOWN", iturtle.isdown(), num)
+          num = defsysvar("DOWN", ipic.type.boolean(iturtle.isdown()), num)
           num = defsysvar("OUTLINE", iturtle.pencolor(), num)
           num = defsysvar("FILL", iturtle.fillcolor(), num)
           num = defsysvar("COLOR", iturtle.color(), num)
@@ -462,7 +445,14 @@ def lexer(program, is_console=False, filename=None, is_artist=False):
           num = defsysvar("MODE", iturtle.mode(), num)
           num = defsysvar("shape", iturtle.shape(), num)
           num = defsysvar("bgpic", iturtle.getscreen().bgpic(), num)
+      num = defsysvar("tk_version", tkinter.TkVersion, num)
+      num = defsysvar("tk_ext_version", tkinter.Tcl().call("info", "patchlevel"), num)
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      num = defsysvar("true", "true", num)
+      num = defsysvar("false", "false", num)
+      #*~-------------------------------------~*~-------------------------------------------~*#
       num = num.replace("($)", "$")
+      #*~-------------------------------------~*~-------------------------------------------~*#
       # for x in range(len(varnames)):
          # num = num.replace(f"%{varnames[x]}", varvals[x])=
       try:

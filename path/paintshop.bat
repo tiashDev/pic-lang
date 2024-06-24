@@ -1,1 +1,0 @@
-@picipy C:\Users\tiash\OneDrive\picturesque\paintshop_windows.py %*

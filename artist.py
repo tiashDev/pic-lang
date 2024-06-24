@@ -6,6 +6,7 @@ from pygments.token import Generic
 from pygments.lexer import bygroups
 from pygments.styles import get_style_by_name
 from pygments.token import *
+__ipic_tk_win_class__ = tkinter.Toplevel
 import ipic.lang
 ipic.lang.iturtle.title("Artist")
 ipic.lang.iturtle.bye()
@@ -101,7 +102,7 @@ menubar = tkinter.Menu(root, tearoff=False)
 root.config(menu=menubar)
 def run():
    turtle_gone = False
-   outwin = tkinter.Tk()
+   outwin = tkinter.Toplevel()
    outwin.title("Artist (Output)")
    outwin.rowconfigure(0, weight=True)
    outwin.columnconfigure(0, weight=True)
@@ -135,6 +136,7 @@ def run():
       out.tag_add("err", f"{start}.0", "end")
    ipic.lang.out.bind("output", on_output)
    ipic.lang.out.bind("error", on_error)
+   ipic.lang.out.bind("onrequestclearscreen", lambda: out.delete("1.0", "end"))
    ipic.lang.iturtle.Turtle._screen = None  # force recreation of singleton Screen object
    ipic.lang.iturtle.TurtleScreen._RUNNING = True  # only set upon TurtleScreen() definition
    ipic.lang.lexer("".join(editor.get('1.0', 'end-1c')), is_artist=True)

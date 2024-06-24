@@ -1,1 +1,0 @@
-@C:\Users\tiash\OneDrive\picturesque\env\Scripts\python C:\Users\tiash\OneDrive\picturesque\paintshop_windows.py %*

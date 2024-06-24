@@ -1,4 +1,5 @@
-import sys, cmd, ipic.lang, traceback
+__ipic_tk_win_class__ = __import__("tkinter").Tk
+import sys, cmd, ipic.lang, traceback, shutil
 ipic.lang.out.bind("output", print)
 about = """Picturesque [1.0.0]
 Copyright (c) 2024."""
@@ -22,13 +23,15 @@ if len(sys.argv) > 1:
          print(str(err))
       sys.exit(1)
    ipic.lang.out.bind("error", on_error)
+   ipic.lang.out.bind("onrequestclearscreen", lambda: print("\n" * shutil.get_terminal_size().lines, end=''))
    if not sys.argv[1].startswith("-"):
       ipic.lang.lexer(open(sys.argv[1], "r").read())
-      ipic.lang.iturtle.mainloop()
+      if not ipic.lang.turtle_gone:
+          ipic.lang.iturtle.mainloop()
    else:
       if sys.argv[1] == "-c":
          ipic.lang.lexer(sys.argv[2])
-         if not iturtle_gone:
+         if not ipic.lang.turtle_gone:
             ipic.lang.iturtle.mainloop()
       else:
          print("Error: Unrecognized flag/option:", sys.argv[1], file=sys.stderr)
@@ -40,4 +43,5 @@ else:
       else:
          print(str(err))
    ipic.lang.out.bind("error", on_error)
+   ipic.lang.out.bind("onrequestclearscreen", lambda: print("\n" * shutil.get_terminal_size().lines, end=''))
    run_console()

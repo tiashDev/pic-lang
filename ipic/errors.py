@@ -8,3 +8,4 @@ class PicturesqueUnreconizedEventException(PicturesqueException): pass
 class PicturesqueCommandAlreadyInNamespaceException(PicturesqueException): pass
 class PicturesqueWindowNotFoundException(PicturesqueException): pass
 class PicturesqueInvalidWidgetException(PicturesqueException): pass
+class PicturesqueUndefinedTkWinClassException(PicturesqueException): pass

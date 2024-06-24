@@ -13,27 +13,27 @@ has_build = False
 try:
    if confirm("Do you want to build picturesque.exe?"):
       print("--------------------- Building picturesque.exe ---------------------")
-      os.system("env\\Scripts\\pyinstaller -F picturesque.py -p env\\Lib\\site-packages -p ipic -i ..\\logo\\picturesque.ico --hidden-import turtle --specpath ./specs/")
+      os.system("env\\Scripts\\pyinstaller -F picturesque.py -p env\\Lib\\site-packages -p ipic -i ..\\logo\\picturesque.ico --hidden-import turtle --specpath ./specs/ --distpath path")
       print("-------------------------- End of output ---------------------------")
       has_build = True
    if confirm("Do you want to build pic.exe?"):
       print("----------------------- Building pic.exe ---------------------------")
-      os.system("env\\Scripts\\pyinstaller -F picturesque.py -p env\\Lib\\site-packages -p ipic -n pic -i ..\\logo\\picturesque.ico --hidden-import turtle --specpath ./specs/")
+      os.system("env\\Scripts\\pyinstaller -F picturesque.py -p env\\Lib\\site-packages -p ipic -n pic -i ..\\logo\\picturesque.ico --hidden-import turtle --specpath ./specs/ --distpath path")
       print("-------------------------- End of output ---------------------------")
       has_build = True
    if confirm("Do you want to build artist.exe?"):
       print("--------------------- Building artist.exe ---------------------")
-      os.system("env\\Scripts\\pyinstaller -F artist.py -p env\\Lib\\site-packages -p ipic -i ..\\logo\\artist.ico --windowed --hidden-import turtle --specpath ./specs/")
+      os.system("env\\Scripts\\pyinstaller -F artist.py -p env\\Lib\\site-packages -p ipic -i ..\\logo\\artist.ico --windowed --hidden-import turtle --specpath ./specs/ --distpath path")
       print("-------------------------- End of output ---------------------------")
       has_build = True
    if confirm("Do you want to build paintshop.exe?"):
       print("--------------------- Building paintshop.exe -----------------------")
-      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -p env\\Lib\\site-packages -i logo\\paintshop.ico -n paintshop --specpath ./specs/")
+      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -p env\\Lib\\site-packages -n paintshop --specpath ./specs/ --distpath path")
       print("-------------------------- End of output ---------------------------")
       has_build = True
    if confirm("Do you want to build pspm.exe?"):
       print("------------------------ Building pspm.exe -------------------------")
-      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -p env\\Lib\\site-packages -n pspm -i logo\\paintshop.ico --specpath ./specs/")
+      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -p env\\Lib\\site-packages -n pspm --specpath ./specs/ --distpath path")
       print("-------------------------- End of output ---------------------------")
       has_build = True
    if has_build and confirm("Do you want to delete the \"build\" folder?"):
