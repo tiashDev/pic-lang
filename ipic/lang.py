@@ -1,4 +1,4 @@
-import turtle as iturtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os, ipic.type, webbrowser, pstats, io, pstats, __main__, ipic.path
+import turtle as iturtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os, ipic.type, webbrowser, pstats, io, __main__, ipic.path, sysconfig, platform, ftplib, configparser, textwrap, csv, ipic.table, plistlib
 tkwin = None
 if '__ipic_tk_win_class__' in dir(__main__):
    tkwin = __main__.__ipic_tk_win_class__
@@ -8,11 +8,15 @@ try:
    import cProfile as profile
 except ImportError: 
    import profile
+if platform.system() == 'Windows':
+   import winsound
 stamps = list()
 out = ipic.out.PicturesqueOutputHandler()
 turtle_gone = False
 iturtle.title("Picturesque")
 tkinter_win_ids = {}
+singlevar_list = [None]
+var_dict = {}
 helpme = """Commands:
   - forward <px>: Moves the turtle (the pen) forward by <px> pixels.
   - backward <px>: Moves it backward by <px> pixels.
@@ -190,18 +194,9 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
          sys.exit(0)
    elif do == "INCLUDE":
       lexer(open(val, "r").read())
-   # elif do == "VAR":
-      # args = val.split(" ")
-      # if args[1] == "=":
-         # varnames.append(args[0])
-         # varvals.append(args[2])
-      # else:
-         # file = ""
-         # if len(sys.argv) > 1:
-            # file = sys.argv[1]
-         # else:
-            # file = "<console>"
-         # print("Error: Invalid syntax at line", str(lineno), "in", file, file=sys.stderr)
+   elif do == "VAR":
+      args = val.split()
+      var_dict[args[0]] = args[1]
    elif do == "PLOT":
       matplotlib.pyplot.figure(num = "Picturesque")
       xpoints = numpy.array([int(x) for x in list(val[:val.find(" * ")].split(" "))])
@@ -390,6 +385,141 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
       out.output(s.getvalue())
    elif do == "CLEARTERM":
       out.requestclearscreen()
+   elif do == "WINSOUND.PLAYALIAS":
+      if platform.system() == "Windows":
+          winsound.PlaySound(val, winsound.SND_ALIAS)
+      else:
+          raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
+   elif do == "WINSOUND.PLAYALIASASYNC":
+      if platform.system() == "Windows":
+          winsound.PlaySound(val, winsound.SND_ALIAS | winsound.SND_ASYNC)
+      else:
+          raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
+   elif do == "WINSOUND.STOPALL":
+      if platform.system() == "Windows":
+          winsound.PlaySound(None, 0)
+      else:
+          raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
+   elif do == "WINSOUND.LOOPALIASASYNC":
+      if platform.system() == "Windows":
+          winsound.PlaySound(val, winsound.SND_ALIAS | winsound.SND_ASYNC | winsound.SND_LOOP)
+      else:
+          raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
+   elif do == "WINSOUND.PLAYFILE":
+      if platform.system() == "Windows":
+          winsound.PlaySound(ipic.path.path_insensitive(val), winsound.SND_FILENAME)
+      else:
+          raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
+   elif do == "WINSOUND.PLAYFILEASYNC":
+      if platform.system() == "Windows":
+          winsound.PlaySound(ipic.path.path_insensitive(val), winsound.SND_FILENAME | winsound.SND_ASYNC)
+      else:
+          raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
+   elif do == "WINSOUND.LOOPFILEASYNC":
+      if platform.system() == "Windows":
+          winsound.PlaySound(ipic.path.path_insensitive(val), winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP)
+      else:
+          raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
+   elif do == "FTP.OPEN":
+      try:
+         singlevar_list[0] = ftplib.FTP(line[line.find(" ")+1:])
+      except __import__("socket").gaierror:
+         raise ipic.errors.PicturesqueInvalidURLException(f"The URL {line[line.find(' ')+1:]!r} is invalid.")
+      except ftplib.all_errors as err:
+         out.output(str(err))
+   elif do == "FTP.LOGIN":
+      try:
+         out.output(singlevar_list[0].login())
+      except ftplib.all_errors as err:
+         out.output(str(err))
+   elif do == "FTP.CD":
+      try:
+         out.output(singlevar_list[0].cwd(line[line.find(" ")+1:]))
+      except ftplib.all_errors as err:
+         out.output(str(err))
+   elif do == "FTP.LSDIR":
+      try:
+         singlevar_list[0].dir(".", out.output)
+      except ftplib.all_errors as err:
+         out.output(str(err))
+   elif do == "FTP.CLOSE":
+      try:
+         out.output(singlevar_list[0].quit())
+         singlevar_list[0] = None
+      except ftplib.all_errors as err:
+         out.output(str(err))
+   elif do == "FTP.TRANSFER":
+      try:
+         with open(shlex.split(line[line.find(" ")+1:])[1], 'wb') as fp:
+            out.output(singlevar_list[0].retrbinary(f'RETR {shlex.split(line[line.find(" ")+1:])[0]}', fp.write))
+      except ftplib.all_errors as err:
+         out.output(str(err))
+   elif do == "LOADINI":
+      args = val.split(" ")
+      cfg = configparser.ConfigParser(allow_no_value=True)
+      cfg.read(ipic.path.path_insensitive(args[1]))
+      var_dict[args[0]] = f"""configuration file (from loadini) -> {ipic.path.path_insensitive(args[1])}
+sections: {", ".join(cfg.sections())}"""
+      for x in cfg.sections():
+         var_dict[f"{args[0]}[{x}]".upper()] = f"""configuration file section (from loadini) -> {ipic.path.path_insensitive(args[1])} ({x})
+options: {", ".join([z for z in cfg[x]])}"""
+         for y in cfg[x]:
+             var_dict[f"{args[0]}[{x}][{y}]".upper()] = cfg[x][y]
+   elif do == "WRAP":
+      for x in textwrap.wrap(val):
+         out.output(x)
+   elif do == "LOADCSV":
+      args = val.split(" ")
+      with open(ipic.path.path_insensitive(args[1])) as csvfile:
+         reader = csv.reader(csvfile)
+         var_repllist = []
+         rows = [x for x in reader]
+         for row_n in range(len(rows)):
+            var_dict[f"{args[0]}[{row_n}]".upper()] = ", ".join(rows[row_n])
+            var_repllist.append(rows[row_n])
+            cols = [x for x in rows[row_n]]
+            for col_n in range(len(cols)):
+               var_dict[f"{args[0]}[{row_n}][{col_n}]".upper()] = cols[col_n]
+         var_dict[args[0]] = ipic.table.table(var_repllist)
+   elif do == "LOADPLISTXML":
+      args = val.split(" ")
+      with open(ipic.path.path_insensitive(args[1]), "rb") as plistfile:
+         plist = plistlib.load(plistfile, fmt=plistlib.FMT_XML)
+         def arrayrepr(array, isnested=False):
+            def checkval(the_val, num):
+               if the_val.__class__.__name__ == "dict":
+                  return f"configuration tree (from plist) -> {ipic.path.path_insensitive(args[1])} (branch: {basename}[{num}])"
+               elif the_val.__class__.__name__ == "list":
+                  return arrayrepr(array[num], isnested=True)
+               elif the_val.__class__.__name__ == "bool":
+                  return ipic.type.boolean(plist[x])
+               else:
+                  return str(the_val)
+            return ("(" if isnested else "") + ", ".join([checkval(array[x], x) for x in range(len(array))]) + (")" if isnested else "")
+         def loadarray(array, basename=args[0], isnested=False):
+            var_dict[basename.upper()] = arrayrepr(array)
+            for x in range(len(array)):
+               if array[x].__class__.__name__ == "dict":
+                  loadplist(array[x], basename=f"{basename}[{x}]")
+               elif array[x].__class__.__name__ == "list":
+                  loadarray(array[x], basename=f"{basename}[{x}]")
+               elif array[x].__class__.__name__ == "bool":
+                  var_dict[f"{basename}[{x}]".upper()] = ipic.type.boolean(plist[x])
+               else:
+                  var_dict[f"{basename}[{x}]".upper()] = array[x]
+         def loadplist(plist, basename=args[0]):
+            var_dict[f"{basename}".upper()] = f"""configuration tree (from plist) -> {ipic.path.path_insensitive(args[1])} (branch: {basename})
+keys: {", ".join([x for x in plist])}"""
+            for x in plist:
+               if plist[x].__class__.__name__ == "dict":
+                   loadplist(plist[x], basename=f"{basename}[{x}]")
+               elif plist[x].__class__.__name__ == "list":
+                   loadarray(plist[x], basename=f"{basename}[{x}]")
+               elif plist[x].__class__.__name__ == "bool":
+                   var_dict[f"{basename}[{x}]".upper()] = ipic.type.boolean(plist[x])
+               else:
+                   var_dict[f"{basename}[{x}]".upper()] = plist[x]
+         loadplist(plist)
    else:
       file = ""
       if filename != None:
@@ -408,10 +538,13 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
   {line[1:-1] if line.startswith("\n") else line}
   {markers[1:-1] if markers.startswith("\n") else markers}""")
 def lexer(program, is_console=False, filename=None, is_artist=False):
+   #*~----------------------------~( Initialization )~--------------------------------------~*#
    global stamps
    if program.endswith(";"):
       program = program[0:-1]
    cmd_list = program.split(";")
+   #*~-------------------------~( End of initialization )~----------------------------------~*#
+   #*~-------------------------------~( Main loop )~----------------------------------------~*#
    for x in range(len(cmd_list)):
       cmd = cmd_list[x]
       line = cmd
@@ -426,7 +559,8 @@ def lexer(program, is_console=False, filename=None, is_artist=False):
          num = cmd[cmd.find(" ")+1:]
          cmd_type = cmd[:cmd.find(" ")]
       def defsysvar(nm, val, num):
-          return num.replace(f"${nm.upper()}", str(val))
+          return num.replace("{" + f"${nm.upper()}" + "}", str(val))
+      #*~-------------------------------~( Variables )~-------------------------------------~*#
       if not turtle_gone:
           num = defsysvar("POS", iturtle.position(), num)
           num = defsysvar("X", iturtle.xcor(), num)
@@ -445,17 +579,28 @@ def lexer(program, is_console=False, filename=None, is_artist=False):
           num = defsysvar("MODE", iturtle.mode(), num)
           num = defsysvar("shape", iturtle.shape(), num)
           num = defsysvar("bgpic", iturtle.getscreen().bgpic(), num)
+      #*~-------------------------------------~*~-------------------------------------------~*#
       num = defsysvar("tk_version", tkinter.TkVersion, num)
       num = defsysvar("tk_ext_version", tkinter.Tcl().call("info", "patchlevel"), num)
+      num = defsysvar("py_version", sysconfig.get_python_version(), num)
+      num = defsysvar("py_ext_version", "%d.%d.%d" % sys.version_info[:3], num)
+      num = defsysvar("py_sup_ext_version", sys.version, num)
       #*~-------------------------------------~*~-------------------------------------------~*#
-      num = defsysvar("true", "true", num)
-      num = defsysvar("false", "false", num)
+      try:
+         num = defsysvar("ftp.cwd", singlevar_list[0].pwd(), num)
+         num = defsysvar("ftp.welcome", singlevar_list[0].getwelcome(), num)
+      except:
+         pass
       #*~-------------------------------------~*~-------------------------------------------~*#
       num = num.replace("($)", "$")
       #*~-------------------------------------~*~-------------------------------------------~*#
-      # for x in range(len(varnames)):
-         # num = num.replace(f"%{varnames[x]}", varvals[x])=
+      for i in var_dict:
+         num = num.replace("{" + f"%{i}" + "}", str(var_dict[i]))
+      #*~----------------------------~( End of variables )~---------------------------------~*#
+      #*~------------------------------~( Interpreting )~-----------------------------------~*#
       try:
          interpret(cmd_type, num, x + 1, line, is_console, filename, is_artist)
       except Exception as err:
          out.error(err)
+      #*~---------------------------~( End of interpreting )~-------------------------------~*#
+   #*~----------------------------~( End of main loop )~------------------------------------~*#

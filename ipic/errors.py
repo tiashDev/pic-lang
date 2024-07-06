@@ -9,3 +9,5 @@ class PicturesqueCommandAlreadyInNamespaceException(PicturesqueException): pass
 class PicturesqueWindowNotFoundException(PicturesqueException): pass
 class PicturesqueInvalidWidgetException(PicturesqueException): pass
 class PicturesqueUndefinedTkWinClassException(PicturesqueException): pass
+class PicturesqueInvalidOSException(PicturesqueException): pass
+class PicturesqueInvalidURLException(PicturesqueException): pass
