@@ -1,0 +1,8 @@
+closeturtle;
+logln Python:;
+logln    Version {$py_version};
+logln    Version {$py_ext_version};
+logln    Version {$py_sup_ext_version};
+logln Tcl/Tk:;
+logln    Version {$tk_version};
+logln    Version {$tk_ext_version};

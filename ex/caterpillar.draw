@@ -1,0 +1,17 @@
+using random;
+hide; ~ hide the default turtle;
+
+SCREEN.COLOR yellow;
+
+turtle.new catp;
+turtle.swap catp;
+shape square;
+SPEED 0;
+pen.up;
+
+turtle.new leaf;
+turtle.swap leaf;
+regshape leaf [[0, 0], [14, 2], [18, 6], [20, 20], [6, 18], [2, 14]];
+shape leaf;
+color green;
+

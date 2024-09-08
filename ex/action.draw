@@ -1,0 +1,59 @@
+using qt5;
+CLOSETURTLE;
+qt.initapp;
+qt.wininit root;
+qt.frm {"add":{$json.false},"name":"__layout_frame"};
+vlayout __layout_frame layout;
+%root.setcentralwidget __layout_frame;
+cmenu {
+  "parent": "__layout_frame",
+  "actions": [
+    {
+      "text": "hello",
+      "checkable": {$json.true},
+      "statustip": "the hello button",
+      "icon": "./ex/icons/icon2.png",
+      "action": "logln hello {($)args[checked]}"
+    },
+	{
+      "text": "world",
+      "checkable": {$json.true},
+      "statustip": "the world button",
+      "icon": "./ex/icons/icon1.png",
+      "action": "logln world {($)args[checked]}"
+    }
+  ]
+};
+toolbar {
+  "parent": "root",
+  "name": "My Toolbar",
+  "actions": [
+    {
+      "text": "foo",
+      "checkable": {$json.true},
+      "statustip": "the foo button",
+      "icon": "./ex/icons/icon3.png",
+      "action": "logln foo {($)args[checked]}"
+    }
+  ]
+};
+menubar {
+  "parent": "root",
+  "menus": [
+    {
+	   "name": "&File",
+       "actions": [
+          {
+             "text": "bar",
+             "checkable": {$json.true},
+             "statustip": "the bar button",
+             "icon": "./ex/icons/icon3.png",
+             "action": "logln bar {($)args[checked]}"
+          }
+       ]
+	}
+  ]
+};
+statusbar root;
+%root.show;
+appexec;

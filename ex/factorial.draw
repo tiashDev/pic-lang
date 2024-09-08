@@ -1,0 +1,11 @@
+set n = 5;
+set res = 1;
+set fact = 2;
+
+while %fact %n <= {
+   set res = expr %res %fact *;
+   set fact = expr %fact 1 +;
+   logln .{%res} .{%fact}
+}
+
+logln .{%res};

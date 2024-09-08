@@ -1,0 +1,20 @@
+using qt5, qtgraph;
+closeturtle;
+qt.initapp;
+qt.wininit root;
+qt.frm {"add":{$json.false},"name":"__layout_frame"};
+hlayout __layout_frame main_layout;
+%root.setcentralwidget __layout_frame;
+addvlayout main_layout control_layout;
+qt.plot plot main_layout | 0 * 0 : {"grid":{"x":{$json.true},"y":{$json.true}}};
+addhlayout control_layout xgroup;
+   qt.lbl {"name":"xtext","layout":"xgroup","text":"x:"};
+   qt.entry {"name":"x","layout":"xgroup"};
+addhlayout control_layout ygroup;
+   qt.lbl {"name":"ytext","layout":"ygroup","text":"y:"};
+   qt.entry {"name":"y","layout":"ygroup"};
+proc usrplot:
+  %plot.set_data {%x.text} {%y.text};
+qt.btn {"name":"plotbtn","layout":"control_layout","onclick":"%usrplot","text":"plot"};
+%root.show;
+appexec;

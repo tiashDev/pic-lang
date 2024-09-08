@@ -1,0 +1,5 @@
+using qt5;
+closeturtle;
+initguiapp;
+loadqmlfile main ./main.qml;
+appexec;

@@ -1,0 +1,3 @@
+icon2.png and icon3.png are from the fugue icon set by Yusuke Kamiyamane.
+the original filename of icon2.png is poop_smiley.png
+the original filename of icon3.png is bug.png

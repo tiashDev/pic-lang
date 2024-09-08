@@ -1,0 +1,31 @@
+using qt5;
+CLOSETURTLE;
+widget flblgroup {
+  signal textchanged[0] onchange!
+  prop text!
+  init {
+    hlayout _w {$args[ilayout]},
+	qt.lbl {
+	  "name": {$args[lname]}`
+	  "layout": {$args[ilayout]}`
+	  "text": {$args[text]}
+	},
+	qt.entry {
+	  "name": {$args[ename]}`
+	  "layout": {$args[ilayout]}`
+	  "onchange": "%_w.props[text].set {$args[text]}"
+	},
+  }
+};
+qt.initapp;
+qt.wininit root;
+qt.frm {"add":{$json.false},"name":"__layout_frame"};
+vlayout __layout_frame layout;
+%root.setcentralwidget __layout_frame;
+%flblgroup '{
+  "name": "namegroup",
+  "layout": "layout",
+  "ilayout": "namegroup_ilayout",
+  "lname": "namegroup_lbl",
+  "ename": "namegroup_entry"
+}';

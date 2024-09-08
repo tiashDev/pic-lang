@@ -1,0 +1,18 @@
+proc square rad:
+   forward {$args[rad]},
+   left 90,
+   forward {$args[rad]},
+   left 90,
+   forward {$args[rad]},
+   left 90,
+   forward {$args[rad]},
+   left 90,
+;
+proc triangle rad:
+   forward {$args[rad]},
+   left 120,
+   forward {$args[rad]},
+   left 120,
+   forward {$args[rad]},
+   left 120,
+;

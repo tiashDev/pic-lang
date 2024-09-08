@@ -1,0 +1,16 @@
+include mymod.draw;
+backward 50;
+fill green;
+fillcolor.start;
+%square 100;
+fillcolor.end;
+forward 50;
+fill yellow;
+fillcolor.start;
+circle 50;
+fillcolor.end;
+backward 50;
+fill red;
+fillcolor.start;
+%triangle 100;
+fillcolor.end;

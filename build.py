@@ -10,31 +10,37 @@ def confirm(prompt):
          return do_confirm(prompt)
    return do_confirm(prompt)
 has_build = False
+hidden_import = ""
+for x in os.listdir("./ipic/ns/builtins/"):
+   y = x.removesuffix(".py")
+   if not x.startswith("_"):
+      hidden_import += f" --hidden-import ipic.ns.builtins.{y}"
 try:
-   if confirm("Do you want to build picturesque.exe?"):
-      print("--------------------- Building picturesque.exe ---------------------")
-      os.system("env\\Scripts\\pyinstaller -F picturesque.py -p env\\Lib\\site-packages -p ipic -i ..\\logo\\picturesque.ico --hidden-import turtle --specpath ./specs/ --distpath path")
-      print("-------------------------- End of output ---------------------------")
+   if confirm("Do you want to build Picturesque?"):
+      print("--------------------- Building Picturesque ---------------------")
+      os.system(f"env\\Scripts\\pyinstaller -F picturesque.py -p ipic{hidden_import} -i ..\\logo\\picturesque.ico --specpath ./specs/")
+      print("------------------------ End of output -------------------------")
+      print("Creating hard links ... ", end="")
+      os.link("./dist/picturesque.exe", "./path/picturesque.exe")
+      os.link("./dist/picturesque.exe", "./path/pic.exe")
+      print("done")
       has_build = True
-   if confirm("Do you want to build pic.exe?"):
-      print("----------------------- Building pic.exe ---------------------------")
-      os.system("env\\Scripts\\pyinstaller -F picturesque.py -p env\\Lib\\site-packages -p ipic -n pic -i ..\\logo\\picturesque.ico --hidden-import turtle --specpath ./specs/ --distpath path")
-      print("-------------------------- End of output ---------------------------")
+   if confirm("Do you want to build Paintshop?"):
+      print("--------------------- Building Paintshop -----------------------")
+      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -n paintshop --specpath ./specs/")
+      print("------------------------ End of output -------------------------")
+      print("Creating hard links ... ", end="")
+      os.link("./dist/paintshop.exe", "./path/paintshop.exe")
+      os.link("./dist/paintshop.exe", "./path/pspm.exe")
+      print("done")
       has_build = True
-   if confirm("Do you want to build artist.exe?"):
-      print("--------------------- Building artist.exe ---------------------")
-      os.system("env\\Scripts\\pyinstaller -F artist.py -p env\\Lib\\site-packages -p ipic -i ..\\logo\\artist.ico --windowed --hidden-import turtle --specpath ./specs/ --distpath path")
+   if confirm("Do you want to build PicPack?"):
+      print("----------------------- Building picpack.exe -----------------------")
+      os.system(f"env\\Scripts\\pyinstaller -F picpack.py -p ipic -p picpack_internals{hidden_import} -n picpack --specpath ./specs/")
       print("-------------------------- End of output ---------------------------")
-      has_build = True
-   if confirm("Do you want to build paintshop.exe?"):
-      print("--------------------- Building paintshop.exe -----------------------")
-      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -p env\\Lib\\site-packages -n paintshop --specpath ./specs/ --distpath path")
-      print("-------------------------- End of output ---------------------------")
-      has_build = True
-   if confirm("Do you want to build pspm.exe?"):
-      print("------------------------ Building pspm.exe -------------------------")
-      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -p env\\Lib\\site-packages -n pspm --specpath ./specs/ --distpath path")
-      print("-------------------------- End of output ---------------------------")
+      print("Creating hard links ... ", end="")
+      os.link("./dist/picpack.exe", "./path/picpack.exe")
+      print("done")
       has_build = True
    if has_build and confirm("Do you want to delete the \"build\" folder?"):
       shutil.rmtree("build")

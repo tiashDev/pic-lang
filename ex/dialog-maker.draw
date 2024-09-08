@@ -1,0 +1,17 @@
+using qt5;
+CLOSETURTLE;
+qt.initapp;
+qt.wininit root;
+qt.frm {"add":{$json.false},"name":"__layout_frame"};
+hlayout __layout_frame layout;
+%root.setcentralwidget __layout_frame;
+qt.wintitle root 'dialog maker';
+qt.entry {"name":"dialogtext","layout":"layout"};
+qt.btn {
+  "name": "dialogbtn",
+  "onclick": "thread.start info dialog maker | {(%)dialogtext.text}",
+  "text": "make dialog",
+  "layout": "layout"
+};
+%root.show;
+appexec;

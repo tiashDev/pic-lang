@@ -1,119 +1,157 @@
-import turtle as iturtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os, ipic.type, webbrowser, pstats, io, __main__, ipic.path, sysconfig, platform, ftplib, configparser, textwrap, csv, ipic.table, plistlib
-tkwin = None
-if '__ipic_tk_win_class__' in dir(__main__):
-   tkwin = __main__.__ipic_tk_win_class__
-else:
-   raise ipic.errors.PicturesqueUndefinedTkWinClassException("The variable '__ipic_tk_win_class__' is undefined.")
+import turtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os, ipic.type, webbrowser, pstats, io, ipic.path, sysconfig, platform, ftplib, configparser, textwrap, csv, ipic.table, plistlib, dbm, sqlite3, atexit, wsgiref.simple_server, tomllib, netrc, urllib.request, colorsys, getpass, ipic.stringutil, hashlib, ipic.ns, importlib, warnings, ipic.warnings, ipic.ns, collections
+
+__author__ = "Ridwan bin Mohammad (Tiash)"
+
 try: 
    import cProfile as profile
-except ImportError: 
+except ImportError:
    import profile
+   
 if platform.system() == 'Windows':
    import winsound
-stamps = list()
+ 
+stamps = []
 out = ipic.out.PicturesqueOutputHandler()
+iturtle = turtle
 turtle_gone = False
-iturtle.title("Picturesque")
+turtle.title("Picturesque")
 tkinter_win_ids = {}
-singlevar_list = [None]
-var_dict = {}
-helpme = """Commands:
-  - forward <px>: Moves the turtle (the pen) forward by <px> pixels.
-  - backward <px>: Moves it backward by <px> pixels.
-  - right <deg>: Turns the pen right by <deg> degrees.
-  - left <deg>: Turns it left by <deg> degrees.
-  - path.begin = path.start = pen.down: Starts drawing a line.
-  - path.end = pen.up: Ends a line.
-  - reset: Resets the program.
-  - clear: Clears the screen.
-  - color <color>: Sets the color of the current line to <color>.
-  - fill <color>: Fills the turtle with the color <color>.
-  - fillcolor.start = fillcolor.begin: Starts filling the turtle with the color specified by fill (see [fill] above).
-  - fillcolor.end: Stops filling the turtle with the color specified by fill (see [fill] above).
-  - wait <secs>: Waits for <secs> seconds.
-  - setx <x>: Sets the X coordinate of the turtle to <x>.
-  - sety <y>: Sets the Y coordinate of the turtle to <y>.
-  - stamp: Stamps a copy of the turtle onto the canvas.
-  - stamps.clear: Clears all the stamps.
-  - speed <s>: Sets the speed of the turtle to <s>.
-  - size <s>: Sets the width of the line to <s>.
-  - logln <v>: Logs a value (<v>) to the console on a new line.
-  - circle <r>: Makes the turtle draw a circle with radius <r>.
-  - outline <c>: Sets the colour of the outline of the turtle to <c>.
-  - hide: Hides the turtle.
-  - show: Shows the turtle.
-  - screen.color <c>: Sets the colour of the screen to <c>.
-  - screen.image <i>: Sets the background image of the screen to <i>.
-  - closeonclick: Makes it so that if you click the turtle window, it will close.
-  - mode <m>: Sets the header mode to <m>.
-    <m> can be -
-      - "standard": The default turtle heading is to the east
-      - "world": The default turtle heading is specified using user-defined world coordinates (using setworldcoordinates)
-      - "logo": The default turtle heading is to the north
-  - goto <x> <y>: Makes the turtle go to x <x> and y <y>.
-  - exit <c=0>: Exits the program with code <c>.
-  - include <f>: Executes file <f>.
-  - dot <r> <c>: Draws a dot with radius <r> and colour <c>.
-  - shape <s>: Sets the shape of the turtle to <s>.
-    <s> can be -
-      - arrow 
-      - turtle 
-      - circle 
-      - square 
-      - triangle 
-      - classic
-  - plot <..x> * <..y>: Plots a plot with x-axis <..x> and y-axis <..y>.
-    Overloads -
-      - plot <..x> * <..y> : <s>: Plots a plot with x-axis <..x> and y-axis <..y>. <s> is a Matplotlib format string for styling the plot.
-  - bar <..l> * <..n>: Plots a vertical bar plot with labels <..l> and values <..n>.
-    Overloads -
-      - bar <..l> * <..n> : <c>: Plots a vertical bar plot with labels <..l> and values <..n>. <c> is the colour of all the bars.
-  - barh <..l> * <..n>: Plots a horizontal bar plot with labels <..l> and values <..n>.
-    Overloads -
-      - barh <..l> * <..n> : <c>: Plots a horizontal bar plot with labels <..l> and values <..n>. <c> is the colour of all the bars.
-  - pie <..l> * <..n>: Plots a pie with labelss <..l> and values <..n>.
-    Overloads -
-      - pie <..l> * <..n> : <..c>: Plots a pie with labels <..l> and values <..n>. <..c> is a list of the colour of the slices.
-  - hist <..v>: Plots a histogram with values <..v>.
-    Overloads -
-      - hist random: Plots a histogram with random values.
-      - hist random <me> <md> <mo>: Plots a histogram with random values. The mean of the values is <me>, the median <md> and the mode <mo>.
-  - eval <..c>: Executes the code <..c>.
-  - forever <..c>: Executes the code <..c> forever.
-  - wininit <n>: Initializes a window with the name <n>.
-  - wintitle <n> <..t>: Gives the window with name <n> the title <..t>.
-  - input <..t> | <..b>: Asks the user for input in the GUI. The window which appears has the title <..t> and body <..b>
-Default variables:
-  - $pos: Gets the position of the turtle in format "(<x>,<y>)".
-  - $x: Gets the x coordinate (horizontal position) of the turtle.
-  - $y: Gets the y coordinate (vertical position) of the turtle
-  - $down: A boolean. True if the turtle is down, otherwise false.
-    Toggleable using -
-      - path.start = path.begin = pen.down
-      - path.end = pen.up
-  - $outline: Gets the color of the current outline of the turtle
-  - $fill: Gets the color of the current filling of the turtle
-  - $color: Gets the current color of the lines drawn by the turtle
-  - $visible: Another boolean. True if the turtle is visible, otherwise false.
-    Toggleable using -
-      - hide
-      - show
-  - $turtle_shape_polygonal_points: The turtle's current shape polygon as a list of coordinate pairs
-  - $winwidth: The width of the window, in pixels
-  - $winheight: The height of the window, in pixels
-  - $bgimage: The current background image of the screen
-  - $mode: The turtle heading mode of the drawing
-    Values -
-      - "standard": The default turtle heading is to the east
-      - "world": The default turtle heading is specified using user-defined world coordinates (using setworldcoordinates)
-      - "logo": The default turtle heading is to the north
-    Toggleable using -
-      - mode
-  - $shape: Gets the current shape of the turtle."""
-def interpret(do, val, lineno, line, is_console, filename, is_artist):
-   global stamps
-   global turtle_gone
-   global tkinter_win_ids
+singlevar_list = [None, None, None, None, {}]
+var_dict = collections.ChainMap()
+proc_dict = {}
+ns_list = {}
+turtles = {}
+from ipic.util import (
+   PROC_TYPE_PIC,
+   PROC_TYPE_PY,
+   PROC_IDX_ARGS,
+   PROC_IDX_CODE,
+   PROC_IDX_TYPE,
+   SVLIST_IDX_FTP,
+   SVLIST_IDX_UNIXDB,
+   SVLIST_IDX_SQLDB,
+   SVLIST_IDX_SQLCUR,
+   SVLIST_IDX_NSDATA,
+   TODO_CALL
+)
+ns_sys_var = {}
+class_dict = {}
+ns_kwargs = dict(
+   stamps = stamps,
+   turtle_gone = turtle_gone,
+   tkinter_win_ids = tkinter_win_ids,
+   PROC_TYPE_PIC = PROC_TYPE_PIC,
+   PROC_TYPE_PY = PROC_TYPE_PY,
+   var_dict = var_dict,
+   proc_dict = proc_dict,
+   singlevar_list = singlevar_list,
+   out = out,
+   ns_sysvar = ns_sys_var,
+   ns_list = ns_list,
+   cls_dict = class_dict
+)
+
+def expr_eval(expr, var_dict=var_dict):
+   toks = expr.split()
+   stack = collections.deque()
+   for tok in toks:
+       if tok.isdecimal():
+           stack.append(int(tok))
+       elif tok.startswith("%"):
+           val = var_dict[tok.removeprefix("%")]
+           if not isinstance(val, int) and val.isdecimal():
+               stack.append(int(val))
+           else:
+               stack.append(val)
+       elif tok in ("$true", "$false"):
+           stack.append(tok)
+       else:
+           res = None
+           rside = stack.pop()
+           try: # Binary expressions
+              lside = stack.pop()
+              if tok == "+":
+                  res = lside + rside
+              elif tok == "-":
+                  res = lside - rside
+              elif tok == "*":
+                  res = lside * rside
+              elif tok == "/":
+                  res = lside / rside
+              elif tok == ">":
+                  res = ipic.type.boolean(lside > rside)
+              elif tok == "<":
+                  res = ipic.type.boolean(lside < rside)
+              elif tok == "==":
+                  res = ipic.type.boolean(lside == rside)
+              elif tok == "!=":
+                  res = ipic.type.boolean(lside != rside)
+              elif tok == ">=":
+                  res = ipic.type.boolean(lside >= rside)
+              elif tok == "<=":
+                  res = ipic.type.boolean(lside <= rside)
+           except IndexError: # Unitary expressions
+              if tok == "not":
+                  res = ipic.type.boolean(not ipic.type.pbool(rside))
+              else:
+                  stack.append(tok)
+                  continue
+           stack.append(res)
+   return stack[0] 
+   
+def sub(code):
+   return code.replace(",", ";").replace("`", ",")
+
+# Microsoft Copilot has saved this function - twice! Thanks, Copilot!
+def parse(code):
+    ast = []
+    current = ""
+    blocks = 0
+    block = False
+
+    # Ensure the code ends with a semicolon or a "}"
+    if not (code.endswith(";") or code.endswith("}")):
+        code += ";"
+
+    for idx, char in enumerate(code):
+        current += char
+
+        if char == "{":
+            if code[idx - 1] != ".":
+                block = True
+            blocks += 1
+
+        elif char == "}":
+            blocks -= 1
+            if blocks == 0 and block:
+                strtoosmol = False
+                try:
+                    next_char = code[idx + 1]
+                except IndexError:
+                    strtoosmol = True
+
+                if not strtoosmol and next_char == ";":  # Block treated as regular line
+                    ast.append(current.strip())
+                else:
+                    # Extract block details
+                    block_name = current[:current.find("{")].strip()
+                    block_content = current[current.find("{") + 1:current.rfind("}")].strip()
+                    ast.append((block_name, block_content, current.strip()))
+                
+                block = False
+                current = ""
+
+        elif char == ";" and not block:
+            if current.strip():
+                ast.append(current.removesuffix(";").strip())
+            current = ""
+
+    if current != "" and block:
+        raise Exception('Expected "}".')
+    return ast
+ 
+def interpret(do, val, lineno, line, filename, proc, var_dict, bl_xinf=None, bl_text=None):
+   global turtle_gone, iturtle
    if do == "FORWARD":
       iturtle.forward(int(val))
    elif do == "BACKWARD":
@@ -129,7 +167,7 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
    elif do == "RESET":
       iturtle.reset()
    elif do == "CLEAR":
-      iturtle.clearscreen()
+      turtle.clearscreen()
    elif do == "COLOR":
       iturtle.color(val)
    elif do == "FILL":
@@ -165,18 +203,18 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
    elif do == "SHOW":
       iturtle.showturtle()
    elif do == "SCREEN.COLOR":
-      iturtle.getscreen().bgcolor(val)
+      turtle.getscreen().bgcolor(val)
    elif do == "SCREEN.IMAGE":
-      iturtle.getscreen().bgpic(val)
+      turtle.getscreen().bgpic(val)
    elif do == "CLOSEONCLICK":
-      iturtle.getscreen().exitonclick()
+      turtle.getscreen().exitonclick()
       turtle_gone = True
    elif do == "MODE":
       iturtle.mode(val)
    elif do == "SETWORLDCOORDINATES":
-      iturtle.getscreen().setworldcoordinates(tuple(map(int, val.split(' '))))
+      turtle.getscreen().setworldcoordinates(tuple(map(int, val.split(' '))))
    elif do == "CLOSETURTLE":
-      iturtle.bye()
+      turtle.bye()
       turtle_gone = True
    elif do == "DOT":
       args = val.split(' ')
@@ -186,23 +224,34 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
    elif do == "SHAPE":
       iturtle.shape(val.lower())
    elif do == "HELP":
-      out.output(helpme)
+      webbrowser.open("https://picturesque-documentation.readthedocs.io/")
    elif do == "EXIT":
       if val != "":
          sys.exit(int(val))
       else:
          sys.exit(0)
    elif do == "INCLUDE":
-      lexer(open(val, "r").read())
-   elif do == "VAR":
-      args = val.split()
-      var_dict[args[0]] = args[1]
+      lexer(open(ipic.path.path_insensitive(val), "r").read())
+   elif do == "SET":
+      (name, eq, value) = val.split(maxsplit=2)
+      evaled = False
+      if eq != "=":
+          if eq.endswith("=") and not evaled:
+              value = expr_eval(f"{var_dict[name]} {value} {eq.removesuffix('=')}")
+              evaled = True
+          else:
+              raise ipic.errors.PicturesqueException(f"Invalid syntax. (line {lineno})")
+      if (not evaled) and value.startswith("EXPR "):
+          value = expr_eval(value.removeprefix("EXPR "))
+          evaled = True
+      var_dict[name] = value
    elif do == "PLOT":
       matplotlib.pyplot.figure(num = "Picturesque")
+      cival = line[line.find(" ")+1:]
       xpoints = numpy.array([int(x) for x in list(val[:val.find(" * ")].split(" "))])
-      if val.find(" : ") > -1:
+      if val.find(" : ") >= -1:
          ypoints = numpy.array([int(x) for x in list(val[val.find(" * ")+len(" * "):val.find(" : ")].split(" "))])
-         matplotlib.pyplot.plot(xpoints, ypoints, val[val.find(" : ")+len(" : "):].lower())
+         matplotlib.pyplot.plot(xpoints, ypoints, cival[cival.find(" : ")+len(" : "):].lower())
       else:
          ypoints = numpy.array([int(x) for x in list(val[val.find(" * ")+len(" * "):].split(" "))])
          matplotlib.pyplot.plot(xpoints, ypoints)
@@ -210,7 +259,7 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
    elif do == "BAR":
       matplotlib.pyplot.figure(num = "Picturesque")
       xpoints = numpy.array([x.replace("\\S", " ").replace("\\(S)", "\\S") for x in list(val[:val.find(" * ")].split(" "))])
-      if val.find(" : ") > -1:
+      if val.find(" : ") >= -1:
          ypoints = numpy.array([int(x) for x in list(val[val.find(" * ")+len(" * "):val.find(" : ")].split(" "))])
          matplotlib.pyplot.bar(xpoints, ypoints, color = val[val.find(" : ")+len(" : "):].lower())
       else:
@@ -220,7 +269,7 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
    elif do == "BARH":
       matplotlib.pyplot.figure(num = "Picturesque")
       xpoints = numpy.array([x.replace("\\S", " ").replace("\\(S)", "\\S") for x in list(val[:val.find(" * ")].split(" "))])
-      if val.find(" : ") > -1:
+      if val.find(" : ") >= -1:
          ypoints = numpy.array([int(x) for x in list(val[val.find(" * ")+len(" * "):val.find(" : ")].split(" "))])
          matplotlib.pyplot.barh(xpoints, ypoints, color = val[val.find(" : ")+len(" : "):].lower())
       else:
@@ -229,8 +278,8 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
       matplotlib.pyplot.show()
    elif do == "PIE":
       matplotlib.pyplot.figure(num = "Picturesque")
-      mylabels = [x.replace("\\S", " ").replace("\\(S)", "\\S") for x in list(val[:val.find(" * ")].split(" "))]
-      if (val.find(" : ") > -1):
+      mylabels = shlex.split(val[:val.find(" * ")])
+      if val.find(" : ") >= -1:
          y = numpy.array([int(x) for x in list(val[val.find(" * ")+len(" * "):val.find(" : ")].split(" "))])
          matplotlib.pyplot.pie(y, labels = mylabels, colors = list(val[val.find(" : ")+len(" : "):].lower().split(" ")))
       else:
@@ -253,7 +302,7 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
             matplotlib.pyplot.hist(x)
       matplotlib.pyplot.show()
    elif do == "BBAR":
-      xpoints = [x.replace("\\S", " ").replace("\\(S)", "\\S") for x in list(val[:val.find(" * ")].split(" "))]
+      xpoints = shlex.split(val[:val.find(" * ")])
       if val.find(" | ") > -1:
          ypoints = numpy.array([int(x) for x in list(val[val.find(" * ")+len(" * "):val.find(" | ")].split(" "))])
          plotly.express.bar(x=xpoints, y=ypoints).write_html(val[val.find(" | ")+len(" | "):])
@@ -261,16 +310,20 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
          ypoints = numpy.array([int(x) for x in list(val[val.find(" * ")+len(" * "):].split(" "))])
          plotly.express.bar(x=xpoints, y=ypoints).show()
    elif do == "EVAL":
-      lexer(val)
+      lexer(sub(val), filename="<eval statement>")
    elif do == "FOREVER":
       while True:
          try:
-            lexer(val.replace(",", ";").replace("'", ","))
+            lexer(bl_text, filename="<forever loop>")
          except KeyboardInterrupt:
             break
-   elif do == "WININIT":
-      tkinter_win_ids[val] = tkwin()
+   elif do == "INITAPP":
+      tkinter_win_ids[val] = tkinter.Tk()
       tkinter_win_ids[val].title("Picturesque")
+   elif do == "WININIT":
+      args = shlex.split(val)
+      tkinter_win_ids[args[1]] = tkinter.TopLevel(tkinter_win_ids[args[0]])
+      tkinter_win_ids[args[1]].title("Picturesque")
    elif do == "WINTITLE":
       args = shlex.split(val)
       try:
@@ -286,78 +339,65 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
       tkinter_win_ids[val].destroy()
    elif do == "BTN":
       args = json.loads(val)
-      tkinter_win_ids[args["NAME"]] = tkinter.Button(tkinter_win_ids[args["PARENT"]], text=args["TEXT"], command=lambda *a: lexer(args["ONCLICK"].replace(",", ";").replace("'", ",")))
+      tkinter_win_ids[args["NAME"]] = tkinter.Button(tkinter_win_ids[args["PARENT"]], text=args["TEXT"], command=lambda *a: lexer(sub(args["ONCLICK"])), filename="<window event>")
+      # define helper procedures
+      proc_dict[f"{args['NAME']}.invoke".upper()] = (
+         range(2), (lambda pos, text: 
+            tkinter_win_ids[args["NAME"]].invoke()
+         ), 
+         PROC_TYPE_PY
+      )
       tkinter_win_ids[args["NAME"]].pack()
    elif do == "SBTN":
       args = json.loads(val)
-      tkinter_win_ids[args["NAME"]] = tkinter.ttk.Button(tkinter_win_ids[args["PARENT"]], text=args["TEXT"], command=lambda *a: lexer(args["ONCLICK"].replace(",", ";").replace("'", ",")))
+      tkinter_win_ids[args["NAME"]] = tkinter.ttk.Button(tkinter_win_ids[args["PARENT"]], text=args["TEXT"], command=lambda *a: lexer(sub(args["ONCLICK"]), filename="<window event>"))
+      # define helper procedures
+      proc_dict[f"{args['NAME']}.invoke".upper()] = (
+         range(2), (lambda pos, text: 
+            tkinter_win_ids[args["NAME"]].invoke()
+         ), 
+         PROC_TYPE_PY
+      )
       tkinter_win_ids[args["NAME"]].pack()
    elif do == "LBL":
       args = json.loads(val)
       tkinter.Label(tkinter_win_ids[args["PARENT"]], text=args["TEXT"]).pack()
+   elif do == "IMG":
+      args = json.loads(val)
+      image = tkinter.PhotoImage(file=args["IMAGE"])
+      tkinter.Label(tkinter_win_ids[args["PARENT"]], image=image).pack()
    elif do == "TXT":
       args = json.loads(val)
       tkinter_win_ids[args["NAME"]] = tkinter.Text(tkinter_win_ids[args["PARENT"]], width=args["WIDTH"], height=args["HEIGHT"])
+      # define helper procedures
+      proc_dict[f"{args['NAME']}.insert".upper()] = (range(2), (lambda pos, text: tkinter_win_ids[args["NAME"]].insert(pos.lower(), text), PROC_TYPE_PY))
       tkinter_win_ids[args["NAME"]].pack()
    elif do == "ENTRY":
       args = json.loads(val)
       tkinter_win_ids[args["NAME"]] = tkinter.Entry(tkinter_win_ids[args["PARENT"]])
+      # define helper procedures
+      proc_dict[f"{args['NAME']}.insert".upper()] = (range(2), (lambda pos, text: tkinter_win_ids[args["NAME"]].insert(pos.lower(), text), PROC_TYPE_PY))
       tkinter_win_ids[args["NAME"]].pack()
    elif do == "SENTRY":
       args = json.loads(val)
       tkinter_win_ids[args["NAME"]] = tkinter.ttk.Entry(tkinter_win_ids[args["PARENT"]])
+      # define helper procedures
+      proc_dict[f"{args['NAME']}.insert".upper()] = (range(2), (lambda pos, text: tkinter_win_ids[args["NAME"]].insert(pos.lower(), text), PROC_TYPE_PY))
       tkinter_win_ids[args["NAME"]].pack()
    elif do == "SCROLLTXT":
       args = json.loads(val)
       tkinter_win_ids[args["NAME"]] = tkinter.scrolledtext.ScrolledText(tkinter_win_ids[args["PARENT"]], width=args["WIDTH"], height=args["HEIGHT"])
+      # define helper procedures
+      proc_dict[f"{args['NAME']}.insert".upper()] = (range(2), (lambda pos, text: tkinter_win_ids[args["NAME"]].insert(pos.lower(), text), PROC_TYPE_PY))
       tkinter_win_ids[args["NAME"]].pack()
-   elif do == "MODIFY":
-      args = json.loads(val)
-      if args["CMD"] == "INSERT":
-         if tkinter_win_ids[args["NAME"]].__class__.__name__ == "ScrolledText" or tkinter_win_ids[args["NAME"]].__class__.__name__ == "Text" or tkinter_win_ids[args["NAME"]].__class__.__name__ == "Entry":
-            tkinter_win_ids[args["NAME"]].insert(args["ARGS"][0].lower(), args["ARGS"][1])
-         else:
-            raise ipic.errors.PicturesqueInvalidWidgetException(f"Invalid widget for command {args['CMD']!r}. (line {lineno}, file {filename if filename != None else '<console>'})")
-      elif args["CMD"] == "INVOKE":
-         if tkinter_win_ids[args["NAME"]].__class__.__name__ == "Button":
-            tkinter_win_ids[args["NAME"]].invoke()
-         else:
-            raise ipic.errors.PicturesqueInvalidWidgetException(f"Invalid widget for command {args['CMD']!r}. (line {lineno}, file {filename if filename != None else '<console>'})")
-      else:
-         raise ipic.errors.PicturesqueUnreconizedCommandException(f"""Error: Unrecognized command {args['CMD']!r} at line {lineno} in {filename if filename != None else "<console>"}.""")
    elif do == "FRM":
       args = json.loads(val)
       tkinter_win_ids[args["NAME"]] = tkinter.ttk.Frame(tkinter_win_ids[args["PARENT"]])
       tkinter_win_ids[args["NAME"]].pack()
    elif do == "INFO":
       tkinter.messagebox.showinfo(val[:val.find(" | ")], val[val.find(" | ")+3:])
-   elif do == "ASKCOLOR":
-      color = tkinter.colorchooser.askcolor()
-      out.output(str(color) if color != (None, None) else "(input canceled by user)")
-   elif do == "INPUT":
-      if turtle_gone:
-         iturtle.Turtle._screen = None  # force recreation of singleton Screen object
-         iturtle.TurtleScreen._RUNNING = True  # only set upon TurtleScreen() definition
-      inputtxt = iturtle.getscreen().textinput(val[:val.find(" | ")], val[val.find(" | ")+3:])
-      if turtle_gone:
-         iturtle.bye()
-      out.output(inputtxt if inputtxt is not None else "(input canceled by user)")
-   elif do == "NUMINPUT":
-      if turtle_gone:
-         iturtle.Turtle._screen = None  # force recreation of singleton Screen object
-         iturtle.TurtleScreen._RUNNING = True  # only set upon TurtleScreen() definition
-      inputtxt = iturtle.getscreen().numinput(val[:val.find(" | ")], val[val.find(" | ")+3:])
-      if turtle_gone:
-         iturtle.bye()
-      out.output(inputtxt if inputtxt is not None else "(input canceled by user)")
    elif do == "WRITE":
       iturtle.write(val)
-   elif do == "ASKOPENFILE":
-      out.output(tkinter.filedialog.askopenfilename())
-   elif do == "ASKOPENFILES":
-      out.output("\n".join(tkinter.filedialog.askopenfilenames()))
-   elif do == "ASKDIR":
-      out.output(tkinter.filedialog.askdirectory())
    elif do == "DOTCL":
       argsx = shlex.split(val)
       argsy = shlex.split(line)
@@ -375,7 +415,7 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
       webbrowser.open_new_tab(shlex.split(line)[1])
    elif do == "PROFILE":
       pr = profile.Profile()
-      pr.runctx(f"lexer({val.replace(',', ';').replace('\'', ',')!r})", globals(), locals())
+      pr.runctx(f"lexer({bl_text!r})", globals(), locals())
       try: pr.disable()
       except: pass
       s = io.StringIO()
@@ -383,8 +423,6 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
       ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
       ps.print_stats()
       out.output(s.getvalue())
-   elif do == "CLEARTERM":
-      out.requestclearscreen()
    elif do == "WINSOUND.PLAYALIAS":
       if platform.system() == "Windows":
           winsound.PlaySound(val, winsound.SND_ALIAS)
@@ -422,36 +460,41 @@ def interpret(do, val, lineno, line, is_console, filename, is_artist):
           raise ipic.errors.PicturesqueInvalidOSException("Your operating system has to be Windows for this command to work.")
    elif do == "FTP.OPEN":
       try:
-         singlevar_list[0] = ftplib.FTP(line[line.find(" ")+1:])
-      except __import__("socket").gaierror:
+         singlevar_list[SVLIST_IDX_FTP] = ftplib.FTP(line[line.find(" ")+1:])
+      except importlib.import_module("socket").gaierror:
          raise ipic.errors.PicturesqueInvalidURLException(f"The URL {line[line.find(' ')+1:]!r} is invalid.")
       except ftplib.all_errors as err:
          out.output(str(err))
    elif do == "FTP.LOGIN":
       try:
-         out.output(singlevar_list[0].login())
+         if not len(val.split(" ")) > 0:
+            out.output(singlevar_list[SVLIST_IDX_FTP].login())
+         else:
+            csval = line[line.find(" "):]
+            args = csval.split(" ")
+            out.output(singlevar_list[SVLIST_IDX_FTP].login(args[0], args[1]))
       except ftplib.all_errors as err:
          out.output(str(err))
    elif do == "FTP.CD":
       try:
-         out.output(singlevar_list[0].cwd(line[line.find(" ")+1:]))
+         out.output(singlevar_list[SVLIST_IDX_FTP].cwd(line[line.find(" ")+1:]))
       except ftplib.all_errors as err:
          out.output(str(err))
    elif do == "FTP.LSDIR":
       try:
-         singlevar_list[0].dir(".", out.output)
+         singlevar_list[SVLIST_IDX_FTP].dir(".", out.output)
       except ftplib.all_errors as err:
          out.output(str(err))
    elif do == "FTP.CLOSE":
       try:
-         out.output(singlevar_list[0].quit())
-         singlevar_list[0] = None
+         out.output(singlevar_list[SVLIST_IDX_FTP].quit())
+         singlevar_list[SVLIST_IDX_FTP] = None
       except ftplib.all_errors as err:
          out.output(str(err))
    elif do == "FTP.TRANSFER":
       try:
          with open(shlex.split(line[line.find(" ")+1:])[1], 'wb') as fp:
-            out.output(singlevar_list[0].retrbinary(f'RETR {shlex.split(line[line.find(" ")+1:])[0]}', fp.write))
+            out.output(singlevar_list[SVLIST_IDX_FTP].retrbinary(f'RETR {line[line.find(" ")+1:]}', fp.write))
       except ftplib.all_errors as err:
          out.output(str(err))
    elif do == "LOADINI":
@@ -493,6 +536,8 @@ options: {", ".join([z for z in cfg[x]])}"""
                   return arrayrepr(array[num], isnested=True)
                elif the_val.__class__.__name__ == "bool":
                   return ipic.type.boolean(plist[x])
+               elif the_val.__class__.__name__ == "bytes":
+                  return the_val.decode("utf-8")
                else:
                   return str(the_val)
             return ("(" if isnested else "") + ", ".join([checkval(array[x], x) for x in range(len(array))]) + (")" if isnested else "")
@@ -505,6 +550,8 @@ options: {", ".join([z for z in cfg[x]])}"""
                   loadarray(array[x], basename=f"{basename}[{x}]")
                elif array[x].__class__.__name__ == "bool":
                   var_dict[f"{basename}[{x}]".upper()] = ipic.type.boolean(plist[x])
+               elif array[x].__class__.__name__ == "bytes":
+                  var_dict[f"{basename}[{x}]".upper()] = plist[x].decode("utf-8")
                else:
                   var_dict[f"{basename}[{x}]".upper()] = array[x]
          def loadplist(plist, basename=args[0]):
@@ -520,12 +567,234 @@ keys: {", ".join([x for x in plist])}"""
                else:
                    var_dict[f"{basename}[{x}]".upper()] = plist[x]
          loadplist(plist)
+   elif do == "UNIXDB.OPEN":
+      singlevar_list[SVLIST_IDX_UNIXDB] = dbm.open(line[line.find(" ")+1:], 'c')
+   elif do == "UNIXDB.SETITEM":
+      args = shlex.split(val)
+      singlevar_list[SVLIST_IDX_UNIXDB][args[0]] = args[1]
+   elif do == "UNIXDB.CLOSE":
+      singlevar_list[SVLIST_IDX_UNIXDB].close()
+      singlevar_list[SVLIST_IDX_UNIXDB] = None
+   elif do == "UNIXDB.GETITEM":
+      out.output(singlevar_list[SVLIST_IDX_UNIXDB].get(val, b'(item not present)').decode("utf-8"))
+   elif do == "SQL.OPEN":
+      singlevar_list[SVLIST_IDX_SQLDB] = sqlite3.connect(line[line.find(" ")+1:])
+      singlevar_list[SVLIST_IDX_SQLCUR] = singlevar_list[SVLIST_IDX_SQLDB].cursor()
+   elif do == "SQL.RUN":
+      res = singlevar_list[SVLIST_IDX_SQLCUR].execute(line[line.find(" ")+1:])
+      try:
+         out.output(ipic.table.htable([col[0] for col in res.description], res.fetchall()))
+      except:
+         pass
+   elif do == "SQL.SAVE":
+      res = singlevar_list[SVLIST_IDX_SQLDB].commit()
+   elif do == "SQL.CLOSE":
+      singlevar_list[SVLIST_IDX_SQLDB].close()
+      singlevar_list[SVLIST_IDX_SQLDB] = None
+      singlevar_list[SVLIST_IDX_SQLCUR] = None
+   elif do == "PROC":
+      name = bl_xinf[:bl_xinf.find(" ")]
+      args_str = bl_xinf[bl_xinf.find(" ")+1:]
+      args = tuple(args_str.split(" ")) if not args_str == "" else ()
+      proc_dict[name] = (args, bl_text, PROC_TYPE_PIC)
+      out.output((name, args, args_str, bl_text))
+   elif do == "ONEXIT":
+      atexit.register(lambda: lexer(bl_text, var_dict=var_dict.new_child()))
+   elif do == "WIDTH":
+      iturtle.width(int(val))
+   elif do == "SERVER":
+      args = json.loads(line[line.find(" ")+1:])
+      def web_server(environ, start_response):
+         def handle_response(route):
+            headers = []
+            for key in args["routes"][route]["headers"]:
+                headers.append((key, sub(args["routes"][route]["headers"][key])))
+            start_response("200 OK", headers)
+            return [args["routes"][route]["text"].encode(args["routes"][route]["encoding"])]
+         for route in args["routes"]:
+            if environ["PATH_INFO"] == route:
+                try:
+                   return handle_response(args["routes"][route]["display"])
+                except KeyError:
+                   return handle_response(route)
+         start_response("404 Not Found", [("Content-Type", "text/html; encoding=utf-8")])
+         return ["""<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Picturesque <code>server</code> command</h1>
+<h2>Error 404</h2>
+<p>The page you requested was not found.</h1>
+
+</body>
+</html>""".encode("utf-8")]
+      class RequestHandler(wsgiref.simple_server.WSGIRequestHandler):
+         def log_message(self, format, *args):
+            out.output("%s - - [%s] %s" % (self.client_address[0], self.log_date_time_string(), format % args))
+         def get_stderr(self):
+            return self.StdErr()
+         class StdErr:
+            def write(self, text):
+               out.strerror(text)
+            def flush(self):
+               out.flush()
+      with wsgiref.simple_server.make_server('', args["port"], web_server, handler_class=RequestHandler) as httpd:
+         out.output(f"Serving HTTP on port {args['port']}...")
+         try:
+            httpd.serve_forever()
+         except KeyboardInterrupt:
+            pass
+   elif do == "LOADTOML":
+      name = val[:val.find(" ")]
+      file = ipic.path.path_insensitive(val[val.find(" ")+1:])
+      doc = tomllib.load(open(file, "rb"))
+      def arrayrepr(array, nested=False):
+          def checkval(item):
+              if item.__class__.__name__ == "dict":
+                 return "configuration tree (from loadtoml)"
+              elif item.__class__.__name__ == "list":
+                 return arrayrepr(item, nested=True)
+              else:
+                 return str(item)
+          return ("(" if nested else "") + ", ".join([checkval(x) for x in array]) + (")" if nested else "") 
+      def parse_array(array, basename=name):
+          var_dict[basename.upper()] = arrayrepr(array)
+          for idx in range(len(array)):
+              value = array[idx]
+              if value.__class__.__name__ == "dict":
+                 parse_table(value, basename=f"{basename}[{idx}]")
+              elif value.__class__.__name__ == "list":
+                 parse_array(value, basename=f"{basename}[{idx}]")
+              else:
+                 var_dict[f"{basename}[{idx}]".upper()] = str(value)
+      def parse_table(table, basename=name):
+          var_dict[basename.upper()] = f"""configuration tree (from loadtoml) -> {ipic.path.path_insensitive(file)}  (branch: {basename})
+keys: {", ".join([x for x in table])}"""
+          for key in table:
+              value = table[key]
+              if value.__class__.__name__ == "dict":
+                 parse_table(value, basename=f"{basename}[{key}]")
+              elif value.__class__.__name__ == "list":
+                 parse_array(value, basename=f"{basename}[{key}]")
+              else:
+                 var_dict[f"{basename}[{key}]".upper()] = str(value)
+      parse_table(doc)
+   elif do == "LOADNETRC":
+      name = val[:val.find(" ")]
+      file = ipic.path.path_insensitive(val[val.find(" ")+1:])
+      doc = netrc.netrc(file)
+      var_dict[name.upper()] = f"""netrc file (from loadnetrc) -> {file}
+hosts: {", ".join([x for x in doc.hosts])}"""
+      for host in doc.hosts:
+         var_dict[f"{name}[{host}]".upper()] = f"""netrc host: {host} (from loadnetrc) -> {file}
+username: {doc.hosts[host][0]}
+password: {doc.hosts[host][2]}"""
+         var_dict[f"{name}[{host}].username".upper()] = doc.hosts[host][0]
+         var_dict[f"{name}[{host}].password".upper()] = doc.hosts[host][2]
+   elif do == "OPENURL":
+      csval = line[line.find(" ")+1:]
+      name = val[:val.find(" ")]
+      file = csval[csval.find(" ")+1:]
+      with urllib.request.urlopen(file) as response:
+         var_dict[name.upper()] = f"web response (from urlopen) -> {file}{f' <--> {response.geturl()}' if response.geturl() != file else ''}"
+         var_dict[f"{name}.text".upper()] = response.read().decode()
+         var_dict[f"{name}.headers".upper()] = f"web response headers: {json.dumps(dict(response.headers))}"
+         for key in response.headers:
+             value = response.headers[key]
+             var_dict[f"{name}.headers[{key}]".upper()] = value
+   elif do == "RGB2HSV":
+      name = val[:val.find(" ")]
+      icolor = val[val.find(" ")+1:].split(" ")
+      ocolor = colorsys.rgb_to_hsv(*(float(x) for x in icolor))
+      var_dict[name.upper()] = " ".join([str(x) for x in ocolor])
+   elif do == "HSV2RGB":
+      name = val[:val.find(" ")]
+      icolor = val[val.find(" ")+1:].split(" ")
+      ocolor = colorsys.hsv_to_rgb(*(float(x) for x in icolor))
+      var_dict[name.upper()] = " ".join([str(x) for x in ocolor])
+   elif do == "RGB2HLS":
+      name = val[:val.find(" ")]
+      icolor = val[val.find(" ")+1:].split(" ")
+      ocolor = colorsys.rgb_to_hls(*(float(x) for x in icolor))
+      var_dict[name.upper()] = " ".join([str(x) for x in ocolor])
+   elif do == "HLS2RGB":
+      name = val[:val.find(" ")]
+      icolor = val[val.find(" ")+1:].split(" ")
+      ocolor = colorsys.hls_to_rgb(*(float(x) for x in icolor))
+      var_dict[name.upper()] = " ".join([str(x) for x in ocolor])
+   elif do == "RGB2YIQ":
+      name = val[:val.find(" ")]
+      icolor = val[val.find(" ")+1:].split(" ")
+      ocolor = colorsys.rgb_to_yiq(*(float(x) for x in icolor))
+      var_dict[name.upper()] = " ".join([str(x) for x in ocolor])
+   elif do == "YIQ2RGB":
+      name = val[:val.find(" ")]
+      icolor = val[val.find(" ")+1:].split(" ")
+      ocolor = colorsys.hls_to_rgb(*(float(x) for x in icolor))
+      var_dict[name.upper()] = " ".join([str(x) for x in ocolor])
+   elif do == "HASH":
+      occur = ipic.stringutil.findall(val, " ")
+      name = val[:occur[0]]
+      algo = val[occur[0]+1:occur[1]]
+      to_encode = val[occur[1]+1:]
+      var_dict[name.upper()] = hashlib.new(algo, to_encode.encode()).hexdigest()
+   elif do == "USING":
+      for x in val.split(","):
+          ns = importlib.import_module(f"ipic.ns.builtins.{x.strip()}")
+          ns_list[x] = ipic.ns.getnsclass(ns)(**ns_kwargs)
+   elif do == "USING-FILE":
+      for x in [y for y in csv.reader([val])][0]:
+          ns = ipic.ns.import_module_from_file_path(ipic.path.path_insensitive(x))
+          ns_list[ns.__name__] = ipic.ns.getnsclass(ns)(**ns_kwargs)
+   elif do == "TURTLE.NEW":
+       turtles[val] = turtle.Turtle()
+   elif do == "TURTLE.SWAP":
+       iturtle = turtles[val]
+   elif do == "TURTLE.DEFAULT":
+       iturtle = turtle
+   elif do == "REGSHAPE":
+       shapename = val[:val.find(' ')].lower()
+       shapejson = val[val.find(' ')+1:]
+       shapepnts = tuple(tuple(x) for x in json.loads(shapejson))
+       turtle.register_shape(shapename, shapepnts)
+   elif do == "IF":
+       condt = ipic.type.pbool(expr_eval(bl_xinf))
+       if condt:
+           lexer(bl_text, var_dict=var_dict.new_child())
+   elif do == "WHILE":
+       condt = ipic.type.pbool(expr_eval(bl_xinf))
+       while condt:
+           lexer(bl_text, var_dict=var_dict.new_child())
+           condt = ipic.type.pbool(expr_eval(bl_xinf))
+   elif do == "ONKEYPRESS":
+       out.output(bl_xinf.capitalize())
+       turtle.onkeypress(lambda: lexer(bl_text, var_dict=var_dict.new_child()), bl_xinf.capitalize())
+   elif do == "LISTEN":
+       turtle.listen()
+   elif do.startswith("%") and do[1:] in proc_dict:
+      args = shlex.split(val)
+      proc = do[1:]
+      if len(args) > len(proc_dict[proc][PROC_IDX_ARGS]): 
+         raise ipic.errors.PicturesqueTooManyArgumentsException(f"Too many arguments for procedure {proc!r}. (line {lineno})")
+      if len(args) < len(proc_dict[proc][PROC_IDX_ARGS]):
+         raise ipic.errors.PicturesqueTooLittleArgumentsException(f"Too little arguments for procedure {proc!r}. (line {lineno})")
+      if proc_dict[proc][PROC_IDX_TYPE] == PROC_TYPE_PIC:
+         lexer(proc_dict[proc][PROC_IDX_CODE], filename=filename, proc=proc, args=ipic.type.py_list2dict(proc_dict[proc][PROC_IDX_ARGS], args), var_dict=var_dict.new_child())
+      elif proc_dict[proc][PROC_IDX_TYPE] == PROC_TYPE_PY:
+         proc_dict[proc][PROC_IDX_CODE](*(x for x in args))
+   # elif do.startswith("&") and do[1:] in class_dict:
+      # args = shlex.split(val[:val.find(" ")]) 
+      # name = val[val.find(" ")+1:]
+      # cls = do[1:]
+      # var_dict[cls] = class_dict[cls].new(proc_dict, var_dict, name, lexer, args, cls, filename)
    else:
-      file = ""
-      if filename != None:
-         file = filename
-      else:
-         file = "<console>"
+      # namespace commands
+      for ns in ns_list:
+         try:
+            ns_list[ns].__interpret__(do, val, line[line.find(" ")+1:])
+            return
+         except ipic.errors.PicturesqueCommandNotInNamespaceException:
+            pass
       markers = ""
       for x in range(len(do)):
          markers += "^"
@@ -534,22 +803,27 @@ keys: {", ".join([x for x in plist])}"""
              markers = x + markers
          else: 
              break
-      raise ipic.errors.PicturesqueUnreconizedCommandException(f"""Error: Unrecognized command at line {lineno} in {file}.
-  {line[1:-1] if line.startswith("\n") else line}
-  {markers[1:-1] if markers.startswith("\n") else markers}""")
-def lexer(program, is_console=False, filename=None, is_artist=False):
-   #*~----------------------------~( Initialization )~--------------------------------------~*#
-   global stamps
-   if program.endswith(";"):
-      program = program[0:-1]
-   cmd_list = program.split(";")
-   #*~-------------------------~( End of initialization )~----------------------------------~*#
-   #*~-------------------------------~( Main loop )~----------------------------------------~*#
+      raise ipic.errors.PicturesqueUnreconizedCommandException(f"""Error: Unrecognized command at {filename}:{lineno}, in {proc}
+  {line[1:] if line.startswith("\n") else line}
+  {markers[1:] if markers.startswith("\n") else markers}""")
+
+def lexer(program, filename="<console>", proc="<global>", args={}, var_dict=var_dict):
+   #*~----------------------------~( Initialization )~-----------------------------------------~*#
+   global stamps, turtle_gone
+   cmd_list = parse(program)
+   out.output(cmd_list)
+   #*~-------------------------~( End of initialization )~-------------------------------------~*#
+   #*~------------------------------~( Main loop )~--------------------------------------------~*#
    for x in range(len(cmd_list)):
-      cmd = cmd_list[x]
+      cmd, bl_xinf = "", ""
+      if not isinstance(cmd_list[x], tuple):
+         cmd = cmd_list[x]
+      else:
+         (bl_xinf, bl_text, cmd) = cmd_list[x]
       line = cmd
       cmd = cmd.strip()
       cmd = cmd.upper()
+      bl_xinf = bl_xinf.upper()
       cmd_len = len(cmd.split(" "))
       if cmd_len == 0 or len(cmd) == 0 or cmd[0] == "~":
          continue
@@ -558,49 +832,112 @@ def lexer(program, is_console=False, filename=None, is_artist=False):
       if cmd_len > 1:
          num = cmd[cmd.find(" ")+1:]
          cmd_type = cmd[:cmd.find(" ")]
-      def defsysvar(nm, val, num):
-          return num.replace("{" + f"${nm.upper()}" + "}", str(val))
-      #*~-------------------------------~( Variables )~-------------------------------------~*#
+      def defsysvar(nm, val, todo=None):
+          nonlocal num, bl_xinf
+          if ".{$"+nm.upper()+"}" in num:
+             if todo == None:
+                num = num.replace(".{$"+nm.upper()+"}", str(val))
+             else:
+                num = num.replace(".{$"+nm.upper()+"}", str(todo(val)))
+          if ".{$"+nm.upper()+"}" in bl_xinf:
+             if todo == None:
+                bl_xinf = bl_xinf.replace(".{$"+nm.upper()+"}", str(val))
+             else:
+                bl_xinf = bl_xinf.replace(".{$"+nm.upper()+"}", str(todo(val)))
+      #*~---------------------------~( Variables )~-----------------------------------------~*#
       if not turtle_gone:
-          num = defsysvar("POS", iturtle.position(), num)
-          num = defsysvar("X", iturtle.xcor(), num)
-          num = defsysvar("Y", iturtle.ycor(), num)
-          num = defsysvar("DOWN", ipic.type.boolean(iturtle.isdown()), num)
-          num = defsysvar("OUTLINE", iturtle.pencolor(), num)
-          num = defsysvar("FILL", iturtle.fillcolor(), num)
-          num = defsysvar("COLOR", iturtle.color(), num)
-          num = defsysvar("VISIBLE", iturtle.isvisible(), num)
-          num = defsysvar("TURTLE_SHAPE_POLYGONAL_POINTS", iturtle.get_shapepoly(), num)
-          num = defsysvar("BGCOLOR", iturtle.getscreen().bgcolor(), num)
-          num = defsysvar("BGIMAGE", iturtle.getscreen().bgpic(), num)
-          num = defsysvar("WINHEIGHT", iturtle.getscreen().window_height(), num)
-          num = defsysvar("WINWIDTH", iturtle.getscreen().window_width(), num)
-          num = defsysvar("STAMPS", stamps, num)
-          num = defsysvar("MODE", iturtle.mode(), num)
-          num = defsysvar("shape", iturtle.shape(), num)
-          num = defsysvar("bgpic", iturtle.getscreen().bgpic(), num)
+          try:
+            defsysvar("POS", iturtle.position())
+            defsysvar("X", iturtle.xcor())
+            defsysvar("Y", iturtle.ycor())
+            defsysvar("DOWN", ipic.type.boolean(iturtle.isdown()))
+            defsysvar("OUTLINE", iturtle.pencolor())
+            defsysvar("FILL", iturtle.fillcolor())
+            defsysvar("COLOR", iturtle.color())
+            defsysvar("VISIBLE", iturtle.isvisible())
+            defsysvar("TURTLE_SHAPE_POLYGONAL_POINTS", iturtle.get_shapepoly())
+            defsysvar("BGCOLOR", turtle.getscreen().bgcolor())
+            defsysvar("BGIMAGE", turtle.getscreen().bgpic())
+            defsysvar("WINHEIGHT", turtle.getscreen().window_height())
+            defsysvar("WINWIDTH", turtle.getscreen().window_width())
+            defsysvar("STAMPS", str(stamps))
+            defsysvar("MODE", turtle.mode())
+            defsysvar("shape", iturtle.shape())
+            defsysvar("bgpic", turtle.getscreen().bgpic())
+          except turtle.Terminator:
+            turtle_gone=True
       #*~-------------------------------------~*~-------------------------------------------~*#
-      num = defsysvar("tk_version", tkinter.TkVersion, num)
-      num = defsysvar("tk_ext_version", tkinter.Tcl().call("info", "patchlevel"), num)
-      num = defsysvar("py_version", sysconfig.get_python_version(), num)
-      num = defsysvar("py_ext_version", "%d.%d.%d" % sys.version_info[:3], num)
-      num = defsysvar("py_sup_ext_version", sys.version, num)
+      defsysvar("tk_version", tkinter.TkVersion)
+      defsysvar("tk_ext_version", tkinter.Tcl().call("info", "patchlevel"))
+      defsysvar("py_version", sysconfig.get_python_version())
+      defsysvar("py_ext_version", "%d.%d.%d" % sys.version_info[:3])
+      defsysvar("py_sup_ext_version", sys.version)
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      defsysvar("argv", ", ".join(sys.argv))
+      for x in range(len(sys.argv)):
+         defsysvar(f"argv[{x}]", sys.argv[x])
       #*~-------------------------------------~*~-------------------------------------------~*#
       try:
-         num = defsysvar("ftp.cwd", singlevar_list[0].pwd(), num)
-         num = defsysvar("ftp.welcome", singlevar_list[0].getwelcome(), num)
+         defsysvar("ftp.cwd", singlevar_list[SVLIST_IDX_FTP].pwd())
+         defsysvar("ftp.welcome", singlevar_list[SVLIST_IDX_FTP].getwelcome())
       except:
          pass
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      defsysvar("cli.input", out.reqinput, todo=TODO_CALL)
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      defsysvar("askopenfile", tkinter.filedialog.askopenfilename, todo=TODO_CALL)
+      defsysvar("askdir", tkinter.filedialog.askdirectory, todo=TODO_CALL)
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      def pic_guiinput():
+         if turtle_gone:
+            iturtle.Turtle._screen = None  # force recreation of singleton Screen object
+            iturtle.TurtleScreen._RUNNING = True  # only set upon TurtleScreen() definition
+         inputtxt = iturtle.getscreen().textinput("Picturesque", "This program wants to ask you something.")
+         if turtle_gone:
+            iturtle.bye()
+         return inputtxt if inputtxt is not None else ""
+      defsysvar("gui.input", pic_guiinput, todo=TODO_CALL)
+      def pic_guinuminput():
+         if turtle_gone:
+            iturtle.Turtle._screen = None  # force recreation of singleton Screen object
+            iturtle.TurtleScreen._RUNNING = True  # only set upon TurtleScreen() definition
+         inputtxt = iturtle.getscreen().numinput(val[:val.find(" | ")], val[val.find(" | ")+3:])
+         if turtle_gone:
+            iturtle.bye()
+         return inputtxt if inputtxt is not None else ""
+      defsysvar("gui.numinput", pic_guinuminput, todo=TODO_CALL)
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      def pic_askcolor():
+         color = tkinter.colorchooser.askcolor()
+         return " ".join([str(x) for x in color[0]]) if color != (None, None) else ""
+      defsysvar("askcolor", pic_askcolor, todo=TODO_CALL)
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      defsysvar("getpass", lambda: getpass.getpass(""), todo=TODO_CALL)
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      defsysvar("json.true", "true")
+      defsysvar("json.false", "false")
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      for i in args:
+         defsysvar(f"args[{i}]", args[i])
+      defsysvar("args", ipic.type.dictionary(args))
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      for i in ns_sys_var:
+         defsysvar(i, ns_sys_var[i][0], **ns_sys_var[i][1])
       #*~-------------------------------------~*~-------------------------------------------~*#
       num = num.replace("($)", "$")
       #*~-------------------------------------~*~-------------------------------------------~*#
       for i in var_dict:
-         num = num.replace("{" + f"%{i}" + "}", str(var_dict[i]))
+         num = num.replace(".{%"+i+"}", str(var_dict[i]))
+      #*~-------------------------------------~*~-------------------------------------------~*#
+      num = num.replace("(%)", "%")
       #*~----------------------------~( End of variables )~---------------------------------~*#
       #*~------------------------------~( Interpreting )~-----------------------------------~*#
       try:
-         interpret(cmd_type, num, x + 1, line, is_console, filename, is_artist)
+         if not isinstance(cmd_list[x], tuple):
+            interpret(cmd_type, num, x + 1, line, filename, proc, var_dict = var_dict)
+         else:
+            interpret(cmd_type, num, x + 1, line, filename, proc, var_dict, bl_xinf.removeprefix(cmd_type+" "), bl_text)
       except Exception as err:
-         out.error(err)
+         out.error(err, x + 1, line, filename, proc)
       #*~---------------------------~( End of interpreting )~-------------------------------~*#
-   #*~----------------------------~( End of main loop )~------------------------------------~*#
+   #*~--------------------------------~( End of main loop )~-----------------------------------~*#

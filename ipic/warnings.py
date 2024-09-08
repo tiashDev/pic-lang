@@ -1,0 +1,1 @@
+class PicturesqueUndefinedTkWinClassWarning(Warning): pass

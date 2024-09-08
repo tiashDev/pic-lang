@@ -8,8 +8,8 @@ except IOError:
 
 setup(
     name="ipic",
-    version="0.1.1",
-    description="Picturesque",
+    version="1.0.0",
+    description="The Picturesque programming language.",
     license="MIT",
     author="tiashDev",
     packages=find_packages(),

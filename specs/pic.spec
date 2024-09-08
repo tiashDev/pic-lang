@@ -3,10 +3,10 @@
 
 a = Analysis(
     ['..\\picturesque.py'],
-    pathex=['env\\Lib\\site-packages', 'ipic'],
+    pathex=['ipic'],
     binaries=[],
     datas=[],
-    hiddenimports=['turtle'],
+    hiddenimports=['ipic.ns.builtins.HELLOWORLD', 'ipic.ns.builtins.QT5'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
