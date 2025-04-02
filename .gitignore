@@ -5,3 +5,4 @@ env/
 new-pkg/
 build/
 */__pycache__
+cipic_bytes.txt
