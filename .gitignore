@@ -4,3 +4,4 @@ paintshop_windows.py
 env/
 new-pkg/
 build/
+*/__pycache__
