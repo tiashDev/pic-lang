@@ -6,3 +6,4 @@ new-pkg/
 build/
 */__pycache__
 cipic_bytes.txt
+ipic/__init__.py

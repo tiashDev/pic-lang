@@ -1,7 +1,5 @@
 import turtle, time, string, matplotlib.pyplot, numpy, plotly.express, sys, ipic.errors, ipic.out, tkinter, json, tkinter.ttk, tkinter.messagebox, tkinter.colorchooser, tkinter.scrolledtext, shlex, tkinter.filedialog, os, ipic.type, webbrowser, pstats, io, ipic.path, sysconfig, platform, ftplib, configparser, textwrap, csv, ipic.table, plistlib, dbm, sqlite3, atexit, wsgiref.simple_server, tomllib, netrc, urllib.request, colorsys, getpass, ipic.stringutil, hashlib, ipic.ns, importlib, warnings, ipic.warnings, ipic.ns, collections
 
-__author__ = "Ridwan bin Mohammad (Tiash)"
-
 try: 
    import cProfile as profile
 except ImportError:
@@ -9,6 +7,8 @@ except ImportError:
    
 if platform.system() == 'Windows':
    import winsound
+
+ipic.type.lang = sys.modules[__name__]
  
 stamps = []
 out = ipic.out.PicturesqueOutputHandler()
@@ -21,6 +21,7 @@ var_dict = collections.ChainMap()
 proc_dict = {}
 ns_list = {}
 turtles = {}
+struct_dict = {}
 from ipic.util import (
    PROC_TYPE_PIC,
    PROC_TYPE_PY,
@@ -147,7 +148,9 @@ def parse(code):
             current = ""
 
     if current != "" and block:
-        raise Exception('Expected "}".')
+        raise ipic.errors.PicturesqueException('Expected "}".')
+    if ast[-1] == "":
+        ast.pop()
     return ast
  
 def interpret(do, val, lineno, line, filename, proc, var_dict, bl_xinf=None, bl_text=None):
@@ -597,7 +600,6 @@ keys: {", ".join([x for x in plist])}"""
       args_str = bl_xinf[bl_xinf.find(" ")+1:]
       args = tuple(args_str.split(" ")) if not args_str == "" else ()
       proc_dict[name] = (args, bl_text, PROC_TYPE_PIC)
-      out.output((name, args, args_str, bl_text))
    elif do == "ONEXIT":
       atexit.register(lambda: lexer(bl_text, var_dict=var_dict.new_child()))
    elif do == "WIDTH":
@@ -771,6 +773,8 @@ password: {doc.hosts[host][2]}"""
        turtle.onkeypress(lambda: lexer(bl_text, var_dict=var_dict.new_child()), bl_xinf.capitalize())
    elif do == "LISTEN":
        turtle.listen()
+   elif do == "STRUCT":
+       struct_dict[bl_xinf] = ipic.type.Struct(bl_xinf, bl_text)
    elif do.startswith("%") and do[1:] in proc_dict:
       args = shlex.split(val)
       proc = do[1:]
@@ -782,11 +786,12 @@ password: {doc.hosts[host][2]}"""
          lexer(proc_dict[proc][PROC_IDX_CODE], filename=filename, proc=proc, args=ipic.type.py_list2dict(proc_dict[proc][PROC_IDX_ARGS], args), var_dict=var_dict.new_child())
       elif proc_dict[proc][PROC_IDX_TYPE] == PROC_TYPE_PY:
          proc_dict[proc][PROC_IDX_CODE](*(x for x in args))
-   # elif do.startswith("&") and do[1:] in class_dict:
-      # args = shlex.split(val[:val.find(" ")]) 
-      # name = val[val.find(" ")+1:]
-      # cls = do[1:]
-      # var_dict[cls] = class_dict[cls].new(proc_dict, var_dict, name, lexer, args, cls, filename)
+   elif do.startswith("&") and do[1:] in struct_dict:
+      (name, eq, new, *args) = val.split(maxsplit=3)
+      if eq != "=" or new != "NEW":
+          raise ipic.errors.PicturesqueException(f"Invalid syntax. (line {lineno})")
+      stru = do[1:]
+      var_dict[name] = struct_dict[stru].new(name, "".join(args))
    else:
       # namespace commands
       for ns in ns_list:
@@ -811,7 +816,6 @@ def lexer(program, filename="<console>", proc="<global>", args={}, var_dict=var_
    #*~----------------------------~( Initialization )~-----------------------------------------~*#
    global stamps, turtle_gone
    cmd_list = parse(program)
-   out.output(cmd_list)
    #*~-------------------------~( End of initialization )~-------------------------------------~*#
    #*~------------------------------~( Main loop )~--------------------------------------------~*#
    for x in range(len(cmd_list)):
