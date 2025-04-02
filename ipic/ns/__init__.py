@@ -69,7 +69,7 @@ class PicturesqueNamespace:
                 singlevar_list,
                 ns_sysvar,
                 ns_list,
-                cls_dict):
+                struct_dict):
        self.out = out
        self.stamps = stamps
        self.turtle_gone = turtle_gone
@@ -81,11 +81,6 @@ class PicturesqueNamespace:
        self.singlevar_list = singlevar_list
        self.sys_var = ns_sysvar
        self.ns_list = ns_list
-       """print(vars(self))
-       for attr in vars(self):
-          if attr.startswith("cls_"):
-             cls_dict[meth2cmd(attr, prefix="cls_")] = getattr(self, attr)
-             print(attr)"""
        self.on_ns_init()
    def on_ns_init(self):
        pass

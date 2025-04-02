@@ -2,9 +2,8 @@
 import ipic.ns, PyQt5.QtWidgets, sys, shlex, json, ipic.lang, PyQt5.QtCore, ipic.path, PyQt5.QtGui, ipic.type, PyQt5.uic, PyQt5.QtQml
 from . import thread, wrapper
 from .enumtype import LineTypes, BlockTypes
-__author__ = "Ridwan bin Mohammad (Tiash)"
 
-"""class CustomWidget(PyQt5.QtWidgets.QWidget):
+_ = """class CustomWidget(PyQt5.QtWidgets.QWidget):
    def __init__(self, ast, proc_dict, var_dict, json, qtwdict):
       super().__init__()
       self.signals = {}
