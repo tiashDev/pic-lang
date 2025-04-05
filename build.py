@@ -24,15 +24,16 @@ try:
       os.link("./dist/picturesque.exe", "./path/picturesque.exe")
       os.link("./dist/picturesque.exe", "./path/pic.exe")
       print("done")
-      has_build = True
-   if confirm("Do you want to build Paintshop?"):
-      print("--------------------- Building Paintshop -----------------------")
-      os.system("env\\Scripts\\pyinstaller -F paintshop_windows.py -n paintshop --specpath ./specs/")
-      print("------------------------ End of output -------------------------")
-      print("Creating hard links ... ", end="")
-      os.link("./dist/paintshop.exe", "./path/paintshop.exe")
-      os.link("./dist/paintshop.exe", "./path/pspm.exe")
-      print("done")
+      if confirm("Do you want to increment the version number?"):
+          print("Incrementing version number... ", end="")
+          with open("./ipic/version.py") as verfile:
+              from ipic.version import VERSION as ver
+              if not ver.find("-") = -1:
+                  new_ver = f"{ver[:ver.find('-')]}-{ver[ver.find('-')+2]}{int(ver[ver.find('-')+3])+1}"
+              else:
+                  new_ver = f"{ver[:ver.rfind('.')]}.{int(ver[ver.rfind('.')+1])+1}"
+              verfile.write(f"VERSION = {new_ver!r}")
+          print("done")
       has_build = True
    if confirm("Do you want to build PicPack?"):
       print("----------------------- Building picpack.exe -----------------------")

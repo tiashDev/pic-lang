@@ -1,4 +1,4 @@
-import inspect, ipic.util, random, shlex, ipic.errors
+import ipic.util, random, shlex, ipic.errors
 
 lang = None # to be given by the importer
 
@@ -27,15 +27,19 @@ def dictionary(dictobj):
    return f"({', '.join([f'{x}: {dictobj[x]}' for x in dictobj])})"
 
 class Struct:
-    def __init__(self, name, code=None):
+    def __init__(self, name, code=None, exts=None):
         self.vars = dict()
         self.procs = dict()
+        if exts is not None:
+            self.vars |= exts.vars
+            self.procs |= exts.procs
         self.name = name
         if code:
             ast = lang.parse(code)
             stats = [x for x in ast if isinstance(x, str)]
             blcks = [x for x in ast if isinstance(x, tuple)]
             for stat in stats:
+                if stat[0] == "~": continue
                 (act, *_) = stat.split(maxsplit=1)
                 if act == "var":
                     (_, name, _, value) = stat.split(maxsplit=3)
@@ -54,7 +58,7 @@ class Struct:
             lang.var_dict[f"{name}.{vname}".upper()] = value
         for pname, proc in self.procs.items():
             lang.proc_dict[f"{name}.{pname}".upper()] = (proc[0], f"set _name = {name};" + proc[1] if proc[2] == lang.PROC_TYPE_PIC else lambda *a: proc[2](name, *a), proc[2])
-        lang.lexer(f"%{name}.{self.name.upper()} {args}")
+        lang.lexer(f"%{name}.{self.name.upper()} {args}", proc=f"<initialization of instance {name!r} of {self.name}>")
         if "_repr" in self.vars:
             return self.vars["_repr"]
         else:

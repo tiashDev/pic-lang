@@ -1,4 +1,5 @@
 import sys, argparse, tkinter, traceback, shutil, ipic.stringutil
+from ipic.version import VERSION
 parser = argparse.ArgumentParser()
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-c', '--code', help='executes the code CODE')
@@ -21,7 +22,7 @@ def error(err, lineno, line, filename, proc):
    else:
       print(str(err), file=sys.stderr)
 def console():
-   print(f"""Picturesque [1.0.0]
+   print(f"""Picturesque [{VERSION}]
 Copyright (c) 2024-.
 Type "help" for help.""")
    while True:
@@ -32,7 +33,7 @@ Type "help" for help.""")
          continue
       elif "{" in code:
          while not len(ipic.stringutil.findall(code.strip(), "{")) \
-                   == len(ipic.stringutil.findall(code.strip(), "}")):
+                   <= len(ipic.stringutil.findall(code.strip(), "}")):
             code += f"\n{input('.. ')}"
          ipic.lang.lexer(code)
       else:

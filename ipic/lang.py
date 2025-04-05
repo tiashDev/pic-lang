@@ -8,6 +8,7 @@ except ImportError:
 if platform.system() == 'Windows':
    import winsound
 
+# Have to do it like this - Python will complain about circular imports if I just import ipic.lang from ipic.type.
 ipic.type.lang = sys.modules[__name__]
  
 stamps = []
@@ -236,6 +237,9 @@ def interpret(do, val, lineno, line, filename, proc, var_dict, bl_xinf=None, bl_
    elif do == "INCLUDE":
       lexer(open(ipic.path.path_insensitive(val), "r").read())
    elif do == "SET":
+      if val.startswith("NONLOCL "):
+         val = val.removeprefix("NONLOCL ")
+         var_dict = var_dict.maps[1]
       (name, eq, value) = val.split(maxsplit=2)
       evaled = False
       if eq != "=":
@@ -774,7 +778,11 @@ password: {doc.hosts[host][2]}"""
    elif do == "LISTEN":
        turtle.listen()
    elif do == "STRUCT":
-       struct_dict[bl_xinf] = ipic.type.Struct(bl_xinf, bl_text)
+       if " EXTENDS " in bl_xinf:
+           sub_, sup = bl_xinf.split(" EXTENDS ", maxsplit=2)
+           struct_dict[sub_] = ipic.type.Struct(sub_, bl_text, struct_dict[sup])
+       else:
+           struct_dict[bl_xinf] = ipic.type.Struct(bl_xinf, bl_text)
    elif do.startswith("%") and do[1:] in proc_dict:
       args = shlex.split(val)
       proc = do[1:]
@@ -809,7 +817,7 @@ password: {doc.hosts[host][2]}"""
          else: 
              break
       raise ipic.errors.PicturesqueUnreconizedCommandException(f"""Error: Unrecognized command at {filename}:{lineno}, in {proc}
-  {line[1:] if line.startswith("\n") else line}
+  {line.split("\n")[0]}
   {markers[1:] if markers.startswith("\n") else markers}""")
 
 def lexer(program, filename="<console>", proc="<global>", args={}, var_dict=var_dict):
