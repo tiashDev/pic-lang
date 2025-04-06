@@ -19,7 +19,7 @@ for x in os.listdir("./ipic/ns/builtins/"):
 try:
    if confirm("Do you want to build Picturesque?"):
       print("--------------------- Building Picturesque ---------------------")
-      os.system(f"env\\Scripts\\pyinstaller -F picturesque.py -p ipic{hidden_import} -i ..\\logo\\picturesque.ico --specpath ./specs/")
+      os.system(f"pyinstaller -F picturesque.py -p ipic{hidden_import} --specpath ./specs/")
       print("------------------------ End of output -------------------------")
       print("Creating hard links ... ", end="")
       os.link("./dist/picturesque.exe", "./path/picturesque.exe")
@@ -29,10 +29,11 @@ try:
           print("----------------- Tagging -----------------")
           os.system(f"git tag v{ver}")
           os.system("git push -u origin master")
+          print("-------------- End of output --------------")
           print("Incrementing version number... ", end="")
-          with open("./ipic/version.py") as verfile:
+          with open("./ipic/version.py", "w") as verfile:
               if not ver.find("-") == -1:
-                  new_ver = f"{ver[:ver.find('-')]}-{ver[ver.find('-')+2]}{int(ver[ver.find('-')+3])+1}"
+                  new_ver = f"{ver[:ver.find('-')]}-{ver[ver.find('-')+1]}{int(ver[ver.find('-')+2])+1}"
               else:
                   new_ver = f"{ver[:ver.rfind('.')]}.{int(ver[ver.rfind('.')+1])+1}"
               verfile.write(f"VERSION = {new_ver!r}")
