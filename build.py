@@ -1,4 +1,5 @@
 import os, shutil
+from ipic.version import VERSION as ver
 def confirm(prompt):
    def do_confirm(prompt):
       confirm_val = input(f"{prompt} (y/n) ")
@@ -24,11 +25,13 @@ try:
       os.link("./dist/picturesque.exe", "./path/picturesque.exe")
       os.link("./dist/picturesque.exe", "./path/pic.exe")
       print("done")
-      if confirm("Do you want to increment the version number?"):
+      if confirm("Do you want to increment the version number (and tag using git)?"):
+          print("----------------- Tagging -----------------")
+          os.system(f"git tag v{ver}")
+          os.system("git push -u origin master")
           print("Incrementing version number... ", end="")
           with open("./ipic/version.py") as verfile:
-              from ipic.version import VERSION as ver
-              if not ver.find("-") = -1:
+              if not ver.find("-") == -1:
                   new_ver = f"{ver[:ver.find('-')]}-{ver[ver.find('-')+2]}{int(ver[ver.find('-')+3])+1}"
               else:
                   new_ver = f"{ver[:ver.rfind('.')]}.{int(ver[ver.rfind('.')+1])+1}"
